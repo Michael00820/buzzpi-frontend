@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BuzzPi – Pi SDK Sandbox</title>
+  <title>BuzzPi – Pi SDK Sandbox (Username Login)</title>
   <style>
     :root{--pri:#7b5df9;--bg:#fafafa;--txt:#111}
     body{font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--txt);margin:0;padding:24px}
@@ -30,13 +30,9 @@
     </div>
 
     <div class="card">
-      <h3>2) Sign in with Pi</h3>
+      <h3>2) Sign in (username scope only)</h3>
       <button id="btnLogin" disabled>Sign In</button>
-    </div>
-
-    <div class="card">
-      <h3>3) Create test payment (0.01 Pi)</h3>
-      <button id="btnPay" disabled>Create Payment</button>
+      <div class="hint">After this works, we’ll re-enable the <code>payments</code> scope.</div>
     </div>
 
     <div class="card">
@@ -45,20 +41,19 @@
     </div>
   </div>
 
-  <!-- Pi Browser SDK (must be before our script) -->
+  <!-- Pi Browser SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
   <script>
     const $ = (id)=>document.getElementById(id);
     const log = (...a)=>{ $('log').textContent += a.join(' ') + "\n"; console.log(...a); };
 
-    const btnInit = $('btnInit');
+    const btnInit  = $('btnInit');
     const btnLogin = $('btnLogin');
-    const btnPay   = $('btnPay');
 
     let sdkReady = false;
 
-    // Debug on load
+    // Quick check on load
     (function bootCheck(){
       const hasPi = typeof window.Pi !== 'undefined';
       log(`🔎 window.Pi present: ${hasPi}`);
@@ -71,7 +66,6 @@
         Pi.init({ version: "2.0", sandbox: true });
         sdkReady = true;
         btnLogin.disabled = false;
-        btnPay.disabled   = false;
         log('✅ Pi.init({ sandbox:true }) completed.');
       } catch (e) {
         log('❌ Pi.init error:', e?.message || e);
@@ -83,41 +77,17 @@
       if (!window.Pi) { log('❌ Pi SDK not present.'); return; }
       if (!sdkReady) { log('⚠️ Please click "Init SDK" first.'); return; }
       try {
-        const scopes = ['username','payments'];
-        log('⏳ Calling Pi.authenticate…');
+        // Small delay helps some sandbox sessions display the sheet
+        await new Promise(r => setTimeout(r, 250));
+
+        const scopes = ['username']; // ← username-only for reliability
+        log('⏳ Calling Pi.authenticate (username)…');
         const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
         log('✅ Auth success → user:', JSON.stringify(auth?.user));
+        log('🎯 Great! Now we can re-add the "payments" scope next.');
       } catch (e) {
         log('❌ Auth error:', e?.message || e);
-        setTimeout(()=>log('ℹ️ Tip: If no popup appeared, re-enter Sandbox code in Pi App → Utilities.'), 2000);
-      }
-    });
-
-    btnPay.addEventListener('click', async () => {
-      log('🔵 Create Payment clicked.');
-      if (!window.Pi) { log('❌ Pi SDK not present.'); return; }
-      if (!sdkReady) { log('⚠️ Please click "Init SDK" first.'); return; }
-      try {
-        const payment = await Pi.createPayment({
-          amount: 0.01,
-          memo: "BuzzPi Sandbox Test",
-          metadata: { source: "sandbox" }
-        }, {
-          onReadyForServerApproval: (paymentId) => {
-            log('➡️ onReadyForServerApproval:', paymentId);
-            // For sandbox demo we just log; real app would POST to /api/pi/approve
-          },
-          onReadyForServerCompletion: (paymentId, txdata) => {
-            log('➡️ onReadyForServerCompletion:', paymentId, 'tx:', JSON.stringify(txdata));
-            // Real app would POST to /api/pi/complete here
-            log('✅ Payment flow finished (sandbox).');
-          },
-          onCancel: (reason) => log('⚠️ User canceled:', reason),
-          onError: (err) => log('❌ Payment error:', err?.message || err)
-        });
-        log('✅ Payment created:', JSON.stringify(payment));
-      } catch (e) {
-        log('❌ createPayment error:', e?.message || e);
+        setTimeout(()=>log('ℹ️ If no popup appeared, re-enter Sandbox code in Pi App → Utilities, then reload.'), 1500);
       }
     });
 
