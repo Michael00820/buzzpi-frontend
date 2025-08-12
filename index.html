@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BuzzPi — Demo (v9 • Long FX)</title>
+<title>BuzzPi — Demo (v10 • Phoenix Rebirth Timeline)</title>
 <meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <style>
@@ -48,20 +48,12 @@
   .gift[data-tier="billionaire"]{outline:2px solid rgba(247,201,72,.25)}
   .gift[data-tier="rare"]{outline:2px solid rgba(91,53,246,.25)}
 
-  /* selection heartbeat */
   .gift.highlight::after{content:"";position:absolute;inset:-2px;border-radius:16px;box-shadow:0 0 0 0 rgba(123,93,249,.5);animation:heartbeat 1200ms ease-in-out infinite}
   @keyframes heartbeat{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,.45)}25%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.15)}50%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}75%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.12)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}}
 
-  /* stage + combo */
   .stage{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:20}
   .combo{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-weight:900;font-size:28px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;padding:6px 12px;border-radius:12px;box-shadow:var(--ring);opacity:0;animation:combo .3s ease forwards}
   @keyframes combo{to{opacity:1;transform:translateX(-50%) scale(1.05)}}
-
-  /* simple DOM particles (fallbacks) */
-  .pop{position:absolute;font-size:64px;animation:pop .6s ease-out forwards}
-  @keyframes pop{0%{transform:scale(.5);opacity:.0}40%{transform:scale(1.1);opacity:1}100%{transform:scale(1) translateY(-120px);opacity:0}}
-  .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff,#ffd);animation:spark 800ms ease-out forwards}
-  @keyframes spark{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}
 
   .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid rgba(127,127,127,.15);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px;z-index:30}
   .nav .item{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted);text-decoration:none}
@@ -75,9 +67,10 @@
   .err{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#ff3b30cc;color:#fff;padding:8px 12px;border-radius:10px;font-size:12px;z-index:50;display:none}
   .footerNote{opacity:.6;text-align:center;font-size:11px;margin:20px 0}
 
-  /* Canvas layer always on top when active */
+  /* Canvas FX + badge */
   #fx{position:fixed;inset:0;pointer-events:none;z-index:1000;display:none}
   #fxBadge{position:fixed;top:8px;left:8px;z-index:1001;background:#0009;color:#fff;border:1px solid #fff3;border-radius:8px;padding:4px 8px;font-size:11px;display:none}
+  #banner{position:fixed;top:12%;left:50%;transform:translateX(-50%);z-index:1002;background:linear-gradient(135deg,#ffd54f,#ffb300);color:#2b2100;border-radius:14px;padding:8px 14px;font-weight:900;letter-spacing:.6px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -112,7 +105,7 @@
         <button class="btn small" id="btnPreviewBillion">Preview Billionaire FX</button>
         <button class="btn secondary small" id="btnGrant20k">Grant +20,000 (dev)</button>
       </div>
-      <div class="muted small" style="margin-top:6px">Preview doesn’t charge coins • Grant lets you send 1k/5k/10k gifts.</div>
+      <div class="muted small" style="margin-top:6px">Phoenix now uses your timeline JSON (8s). Preview cycles all billionaire FX.</div>
     </div>
 
     <div class="gsec"><div class="gtitle"><span>Common</span><small class="muted">1–20 BuzzCoins</small></div><div class="grid" id="gridCommon"></div></div>
@@ -147,29 +140,37 @@
       <div class="muted small" id="lvHint" style="margin-top:8px"></div>
     </div>
   </section>
-
-  <section class="screen" id="scrProfile">
-    <div class="card"><div style="display:flex;gap:12px;align-items:center">
-      <div class="logo-badge" style="width:44px;height:44px;border-radius:12px"></div>
-      <div><div style="font-weight:800">You (Demo)</div><div class="muted small">Ranked badge & frames appear here later.</div></div>
-    </div></div>
-    <div class="card"><div style="font-weight:800;margin-bottom:8px">Stealth Mode (Phase 2)</div>
-      <div class="muted small">Face mask + voice modulation will be here in Phase 2.</div>
-    </div>
-  </section>
-
-  <div class="footerNote">If anything looks cached, reload with <code>?v=9</code>.</div>
+  <div class="footerNote">If anything looks cached, reload with <code>?v=10</code>.</div>
 </div>
 
-<!-- DOM stage + Canvas FX -->
 <div class="stage" id="stage"></div>
 <canvas id="fx"></canvas>
 <div id="fxBadge">FX RUNNING</div>
+<div id="banner">REBIRTH</div>
 
 <div class="toast" id="toast"></div>
 
+<!-- Your Phoenix JSON config -->
+<script type="application/json" id="phoenix-config">
+{
+  "id": "gift.phoenix_rebirth",
+  "version": "1.0.0",
+  "lod": ["lite","standard","cinematic"],
+  "duration": 8.0,
+  "beats": [
+    {"t":0.0, "actions":["grade:warm_in","vignette:0.25","bloom:0.4","sfx:rumble_in","rimlight:on"]},
+    {"t":0.6, "actions":["ignite_sigil","particles:sparks_burst","sfx:impact","heat:on"]},
+    {"t":2.2, "actions":["phoenix:enter_from_bg","dof:focus_near","shake:0.35@60ms","sfx:whoosh_in"]},
+    {"t":4.2, "actions":["phoenix:crown_form","banner:show","sfx:choir_hit","bloom:0.8"]},
+    {"t":6.0, "actions":["embers:tail","heat:fade_out","grade:neutral_out","banner:hold"]},
+    {"t":8.0, "actions":["end"]}
+  ],
+  "combo": {"window": 8.0, "tiers":[{"min":2,"effect":"wingspan_plus"},{"min":3,"effect":"loop_second_pass"}]}
+}
+</script>
+
 <script>
-/* ===== Helpers & Errors ===== */
+/* ---------- Utilities, state, UI ---------- */
 function $(s){return document.querySelector(s)}
 function el(t,c){const d=document.createElement(t); if(c) d.className=c; return d}
 function showToast(m,ms=1600){const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms)}
@@ -177,39 +178,40 @@ function showErr(m){const e=$('#err'); e.textContent=m; e.style.display='block';
 window.onerror=(m,src,l,c,e)=>showErr('JS error: '+(e?.message||m));
 window.onunhandledrejection=(ev)=>showErr('Promise error: '+(ev?.reason?.message||ev?.reason||'unknown'));
 
-/* ===== State ===== */
 const S={regular:300,ad:0,spent:0,adsToday:0,lastAdDate:null,holdTimer:null};
-function save(){localStorage.setItem('buzz_demo_v9',JSON.stringify(S))}
-function load(){try{Object.assign(S,JSON.parse(localStorage.getItem('buzz_demo_v9')||'{}'))}catch(_){}}
+function save(){localStorage.setItem('buzz_demo_v10',JSON.stringify(S))}
+function load(){try{Object.assign(S,JSON.parse(localStorage.getItem('buzz_demo_v10')||'{}'))}catch(_){}
 
-/* ===== UI refs ===== */
+}
 const EL={
   screens:{home:$('#scrHome'),gifts:$('#scrGifts'),wallet:$('#scrWallet'),profile:$('#scrProfile')},
   balance:$('#balance'), cRegular:$('#cRegular'), cAd:$('#cAd'),
   adInfo:$('#adInfo'), level:$('#level'), lvBar:$('#lvBar'), lvPct:$('#lvPct'), lvHint:$('#lvHint'),
   gridCommon:$('#gridCommon'),gridRare:$('#gridRare'),gridBillion:$('#gridBillion'),
-  stage:$('#stage'), fx:$('#fx'), fxBadge:$('#fxBadge'),
+  stage:$('#stage'), fx:$('#fx'), fxBadge:$('#fxBadge'), banner:$('#banner'),
   btnTopup:$('#btnTopup'), btnWatchAd:$('#btnWatchAd'), btnReset:$('#btnReset'),
   btnPreviewBillion:$('#btnPreviewBillion'), btnGrant20k:$('#btnGrant20k')
 };
 function fmt(n){return n.toLocaleString()}
 function updateUI(){
   $('#balance').textContent=fmt(S.regular+S.ad);
-  $('#cRegular').textContent=fmt(S.regular);
-  $('#cAd').textContent=fmt(S.ad);
+  if(EL.cRegular) EL.cRegular.textContent=fmt(S.regular);
+  if(EL.cAd) EL.cAd.textContent=fmt(S.ad);
   const today=new Date().toISOString().slice(0,10);
   if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today;save()}
-  $('#adInfo').textContent=`Ads watched today: ${S.adsToday}/5`;
+  if(EL.adInfo) EL.adInfo.textContent=`Ads watched today: ${S.adsToday}/5`;
   const per=500, lvl=Math.min(99,Math.floor(S.spent/per)+1), into=S.spent%per, pct=Math.round(into/per*100);
-  $('#level').textContent=lvl; $('#lvPct').textContent=pct+'%'; $('#lvBar').style.width=pct+'%';
-  $('#lvHint').textContent=`${fmt(per-into)} coins to Level ${Math.min(99,lvl+1)}`;
+  if(EL.level) EL.level.textContent=lvl;
+  if(EL.lvPct) EL.lvPct.textContent=pct+'%';
+  if(EL.lvBar) EL.lvBar.style.width=pct+'%';
+  if(EL.lvHint) EL.lvHint.textContent=`${fmt(per-into)} coins to Level ${Math.min(99,lvl+1)}`;
 }
 function spend(amount){
   if(amount>S.regular+S.ad) return false;
   const useAd=Math.min(S.ad,amount); S.ad-=useAd; S.regular-=(amount-useAd); S.spent+=amount; save(); updateUI(); return true;
 }
 
-/* ===== Gifts ===== */
+/* ---------- Gifts data ---------- */
 const gifts={
   common:[
     {emoji:'🥳',name:'Party',price:1,anim:'party'},{emoji:'🥰',name:'Hearts',price:1,anim:'sparkle'},
@@ -234,7 +236,7 @@ const gifts={
     {emoji:'🛥️',name:'Yacht',price:500,anim:'yacht'}
   ],
   billionaire:[
-    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000,anim:'phoenixFX'},
+    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000,anim:'phoenixRebirth'},  <!-- uses your JSON timeline -->
     {emoji:'🦄',name:'Racing Unicorn',price:1000,anim:'unicornFX'},
     {emoji:'🏰',name:'Crystal Castle',price:1000,anim:'castleFX'},
     {emoji:'💰',name:'Treasure Chest',price:1000,anim:'chestFX'},
@@ -248,7 +250,7 @@ const gifts={
   ]
 };
 
-/* ===== Render ===== */
+/* ---------- Render gift grids ---------- */
 function giftEl(g){const e=el('div','gift'); e.dataset.price=g.price; e.dataset.anim=g.anim||''; e.dataset.name=g.name; e.innerHTML=`<div class="emo">${g.emoji}</div><div class="name">${g.name}</div><div class="price">${fmt(g.price)}🪙</div>`; return e}
 function mountGifts(){
   gifts.common.forEach(g=>EL.gridCommon.appendChild(giftEl(g)));
@@ -256,172 +258,250 @@ function mountGifts(){
   gifts.billionaire.forEach(g=>{const e=giftEl(g); e.dataset.tier='billionaire'; EL.gridBillion.appendChild(e)});
 }
 
-/* ===== DOM fallback particles ===== */
+/* ---------- DOM fallback particles (for non-billionaire) ---------- */
 function center(){return {x:innerWidth/2,y:innerHeight/2}}
 function add(node,ms=1000){EL.stage.appendChild(node); setTimeout(()=>node.remove(),ms)}
 function fallback(emoji){const p=el('div','pop');const {x,y}=center();p.textContent=emoji||'✨';p.style.left=(x-28)+'px';p.style.top=(y-28)+'px';EL.stage.appendChild(p);for(let i=0;i<12;i++){const s=el('div','spark');s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',((Math.random()*2-1)*140|0)+'px');s.style.setProperty('--dy',(-60-Math.random()*120|0)+'px');EL.stage.appendChild(s);setTimeout(()=>s.remove(),800)}setTimeout(()=>p.remove(),620)}
 
-/* ===== Canvas FX (robust) ===== */
-let ctx=null, W=0, H=0, DPR=1;
-function resizeFX(){
-  if(!EL.fx) return;
-  DPR=Math.min(2, (window.devicePixelRatio||1));
-  W=innerWidth; H=innerHeight;
-  EL.fx.width=W*DPR; EL.fx.height=H*DPR;
-  if(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.scale(DPR,DPR); }
-}
-function startFX(){
-  EL.fx.style.display='block'; EL.fxBadge.style.display='block';
-  if(!ctx){ ctx=EL.fx.getContext('2d'); }
-  if(!ctx){ EL.fx.style.display='none'; EL.fxBadge.style.display='none'; return false; }
-  resizeFX();
-  ctx.clearRect(0,0,W,H);
-  // tiny dot to confirm canvas is painting
-  ctx.fillStyle='rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(14,14,4,0,Math.PI*2); ctx.fill();
-  return true;
-}
-function endFX(){ if(!ctx) return; ctx.clearRect(0,0,W,H); EL.fx.style.display='none'; EL.fxBadge.style.display='none'; }
-window.addEventListener('resize', resizeFX);
-window.addEventListener('orientationchange', ()=>setTimeout(resizeFX, 150));
-
-/* Utilities */
+/* ---------- Canvas FX base ---------- */
+let ctx=null, W=0, H=0, DPR=1, FPS=60;
 const R=()=>Math.random(), TAU=Math.PI*2;
 function lerp(a,b,t){return a+(b-a)*t}
 function easeOutCubic(t){return 1-Math.pow(1-t,3)}
 function easeInOut(t){return t<.5? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2}
-function glow(ctx,x,y,r,a0=0.9,col='255,200,120'){
-  const g=ctx.createRadialGradient(x,y,0,x,y,r);
-  g.addColorStop(0,`rgba(${col},${a0})`);
-  g.addColorStop(1,`rgba(${col},0)`);
-  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
-}
+function resizeFX(){DPR=Math.min(2, (window.devicePixelRatio||1)); W=innerWidth; H=innerHeight; EL.fx.width=W*DPR; EL.fx.height=H*DPR; if(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.scale(DPR,DPR); }}
+function startFX(){EL.fx.style.display='block'; EL.fxBadge.style.display='block'; if(!ctx) ctx=EL.fx.getContext('2d'); if(!ctx){ EL.fx.style.display='none'; EL.fxBadge.style.display='none'; return false; } resizeFX(); ctx.clearRect(0,0,W,H); return true}
+function endFX(){if(!ctx) return; ctx.clearRect(0,0,W,H); EL.fx.style.display='none'; EL.fxBadge.style.display='none'; EL.banner.style.display='none'}
+window.addEventListener('resize', resizeFX); window.addEventListener('orientationchange', ()=>setTimeout(resizeFX, 150));
+function glow(x,y,r,a0=0.9,col='255,200,120'){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${col},${a0})`);g.addColorStop(1,`rgba(${col},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill()}
 
-/* ===== Long-form Billionaire FX ===== */
-/* Phoenix — 6.0s */
-function phoenixFX(){
-  if(!startFX()){ fallback('🔥'); return }
-  const t0=performance.now(), D=6000;
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D), p=easeInOut(t);
-    ctx.clearRect(0,0,W,H);
-    const x=lerp(-W*.2, W*1.1, p), y=lerp(H*.7, H*.25, p);
-    // sustained glow trail (reduced particles per frame for perf)
-    for(let i=0;i<70;i++){
-      glow(ctx, x-R()*160, y+(R()*60-30), R()*26+12, (1-t)*(R()*0.4+0.35), '255,120,40');
+/* ---------- FPS monitor ---------- */
+(function fpsLoop(){
+  let last=performance.now(), frames=0, acc=0;
+  function step(now){
+    const dt=now-last; last=now; acc+=dt; frames++;
+    if(acc>=500){ FPS=Math.round(frames*1000/acc); frames=0; acc=0; }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+})();
+
+/* ---------- PhoenixRebirth (JS port of your TS) ---------- */
+class PhoenixRebirth{
+  constructor({lod='standard', maskTex=null}={}){
+    this.lod=lod; this.maskTex=maskTex;
+    this.particleScale=1; this.running=false; this.start=0;
+    this.opts={bloom:0, vignette:0, gradeWarm:0, heat:0, rimlight:false, dof:false, shakeMag:0};
+    this.flags={sigil:false, phoenix:false, crown:false, embers:false, loopSecond:false, wingspanPlus:false};
+  }
+  async preload(){/* placeholder: would fetch GLB/audio */}
+  attachTo(scene, postChain, ui){/* not needed here; canvas is our scene */}
+  reduceParticles(scale){ this.particleScale=Math.max(0.3, Math.min(1, scale)); }
+  switchLOD(lod){ this.lod=lod; }
+
+  play({onPeak}={}){
+    if(!startFX()) return;
+    this.running=true; this.start=performance.now();
+    const cfg=this.config = JSON.parse($('#phoenix-config').textContent);
+    this.duration = cfg.duration*1000; // ms
+    this.beats = cfg.beats.map(b=>({t:b.t*1000,actions:b.actions}));
+    this.comboSpec = cfg.combo;
+    // schedule one-shot actions
+    this.nextBeat=0;
+    // adaptive
+    if(FPS<45) this.reduceParticles(0.6);
+    // render loop
+    const loop = (now)=>{
+      if(!this.running) return;
+      const t=now-this.start;
+      // fire beats
+      while(this.nextBeat<this.beats.length && t>=this.beats[this.nextBeat].t){
+        this.applyActions(this.beats[this.nextBeat].actions);
+        this.nextBeat++;
+        if(onPeak && this.nextBeat===3) onPeak(); // around enter_from_bg
+      }
+      this.draw(t/this.duration);
+      if(t<this.duration || this.flags.loopSecond){ requestAnimationFrame(loop); }
+      else { this.end(); }
+    };
+    requestAnimationFrame(loop);
+  }
+
+  applyActions(actions){
+    actions.forEach(a=>{
+      if(a.startsWith('grade:')){ const k=a.split(':')[1]; if(k==='warm_in') this.tween('gradeWarm',1,600); if(k==='neutral_out') this.tween('gradeWarm',0,600); }
+      else if(a.startsWith('vignette:')){ const v=parseFloat(a.split(':')[1]); this.opts.vignette=v; }
+      else if(a.startsWith('bloom:')){ const v=parseFloat(a.split(':')[1]); this.opts.bloom=v; }
+      else if(a==='sfx:rumble_in'||a==='sfx:impact'||a==='sfx:whoosh_in'||a==='sfx:choir_hit'){ /* hook in WebAudio later */ }
+      else if(a==='rimlight:on'){ this.opts.rimlight=true; }
+      else if(a==='ignite_sigil'){ this.flags.sigil=true; setTimeout(()=>this.flags.sigil=false, 1400); this.sparkBurst(80); }
+      else if(a==='particles:sparks_burst'){ this.sparkBurst(60); }
+      else if(a==='heat:on'){ this.tween('heat',0.6,500); }
+      else if(a==='phoenix:enter_from_bg'){ this.flags.phoenix=true; this.phoenixT0=performance.now(); }
+      else if(a==='dof:focus_near'){ this.opts.dof=true; setTimeout(()=>this.opts.dof=false,1400) }
+      else if(a.startsWith('shake:')){ const [mag,win]=a.split(':')[1].split('@'); this.shake(parseFloat(mag), parseInt(win)); }
+      else if(a==='phoenix:crown_form'){ this.flags.crown=true; setTimeout(()=>this.flags.crown=false,1600) }
+      else if(a==='banner:show'){ EL.banner.textContent='REBIRTH'; EL.banner.style.display='block'; }
+      else if(a==='banner:hold'){ /* leave visible until end */ }
+      else if(a==='embers:tail'){ this.flags.embers=true; setTimeout(()=>this.flags.embers=false,1800) }
+      else if(a==='heat:fade_out'){ this.tween('heat',0,800); }
+      else if(a==='end'){ this.end(); }
+    });
+  }
+
+  tween(key,target,dur){
+    const startVal=this.opts[key]; const t0=performance.now();
+    const tick=()=>{
+      const k=Math.min(1,(performance.now()-t0)/dur);
+      this.opts[key]=startVal+(target-startVal)*k;
+      if(k<1) requestAnimationFrame(tick);
+    }; tick();
+  }
+
+  shake(mag,ms){
+    const t0=performance.now(); const base=this.opts.shakeMag;
+    const tick=()=>{
+      const k=(performance.now()-t0)/ms;
+      if(k<1){ this.opts.shakeMag = mag*(1-k) + base*k; requestAnimationFrame(tick); }
+      else { this.opts.shakeMag=base; }
+    }; tick();
+  }
+
+  sparkBurst(n){
+    if(!this.sparks) this.sparks=[];
+    for(let i=0;i<n*this.particleScale;i++){
+      this.sparks.push({x:W/2,y:H*0.55,vx:(R()*2-1)*3,vy:-(R()*2+1.5),life:900,age:0});
     }
-    glow(ctx,x,y,52,0.95,'255,160,60');
-    ctx.fillStyle='rgba(255,240,200,.9)'; ctx.beginPath(); ctx.arc(x+6,y-6,4,0,TAU); ctx.fill();
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
-}
+  }
 
-/* Unicorn — 5.5s */
-function unicornFX(){
-  if(!startFX()){ fallback('🦄'); return }
-  const t0=performance.now(), D=5500;
-  ctx.font='64px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D), p=easeInOut(t);
+  draw(p){
     ctx.clearRect(0,0,W,H);
-    const x=lerp(-100,W+100,p), y=lerp(H*.65,H*.35,p);
-    const g=ctx.createLinearGradient(x-260,y-60,x,y+60);
-    ['red','orange','yellow','lime','deepskyblue','indigo','violet'].forEach((c,i)=>g.addColorStop(i/6,c));
-    ctx.globalAlpha=.9*(1-t); ctx.fillStyle=g; ctx.fillRect(x-260,y-28,240,56); ctx.globalAlpha=1;
-    ctx.globalCompositeOperation='lighter';
-    for(let i=0;i<54;i++){ const sx=x-R()*220, sy=y+(R()*60-30); ctx.fillStyle='rgba(255,255,255,.95)'; ctx.beginPath(); ctx.arc(sx,sy,R()*2+1.2,0,TAU); ctx.fill();}
-    ctx.globalCompositeOperation='source-over';
-    ctx.fillText('🦄', x-24, y+18);
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
-}
 
-/* Jet — 6.0s */
-function jetFX(){
-  if(!startFX()){ fallback('✈️'); return }
-  const t0=performance.now(), D=6000;
-  ctx.font='60px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D), p=easeInOut(t);
-    ctx.clearRect(0,0,W,H);
-    const x=lerp(-180,W+180,p), y=lerp(H*.55,H*.35,p);
-    ctx.globalCompositeOperation='lighter';
-    ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(x-260,y-6,240,12);
-    if(t>.25 && t<.65){
-      const k=(t-.25)/.4, r=lerp(22,180,k);
-      ctx.strokeStyle=`rgba(255,255,255,${1-k})`; ctx.lineWidth=4;
-      ctx.beginPath(); ctx.arc(x-60,y,r,0,TAU); ctx.stroke();
+    /* grade / vignette */
+    if(this.opts.gradeWarm>0){
+      ctx.fillStyle=`rgba(255,160,80,${0.15*this.opts.gradeWarm})`;
+      ctx.fillRect(0,0,W,H);
     }
-    ctx.globalCompositeOperation='source-over';
-    ctx.fillText('🛩️', x-20, y+18);
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
-}
-
-/* Castle — 6.0s */
-function castleFX(){
-  if(!startFX()){ fallback('🏰'); return }
-  const t0=performance.now(), D=6000;
-  ctx.font='70px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D), p=easeOutCubic(t), x=W/2, y=lerp(H*.82,H*.45,p);
-    ctx.clearRect(0,0,W,H);
-    ctx.globalCompositeOperation='lighter';
-    for(let i=0;i<5;i++) glow(ctx,x,y+14,150+i*26,0.12*(1-t),'180,220,255');
-    for(let i=0;i<70;i++){
-      const ang=R()*TAU, rr=R()*160; const px=x+Math.cos(ang)*rr, py=y+Math.sin(ang)*rr;
-      glow(ctx,px,py,3,0.9,'255,255,255');
+    if(this.opts.vignette>0){
+      const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.65);
+      g.addColorStop(0,'rgba(0,0,0,0)');
+      g.addColorStop(1,`rgba(0,0,0,${this.opts.vignette})`);
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
     }
-    ctx.globalCompositeOperation='source-over';
-    ctx.textAlign='center'; ctx.fillText('🏰', x, y);
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
-}
 
-/* Chest — 5.5s */
-function chestFX(){
-  if(!startFX()){ fallback('💰'); return }
-  const t0=performance.now(), D=5500;
-  const coins=Array.from({length:120},()=>({x:W/2+(R()*180-90),y:H*.62,vx:(R()*2-1)*2.2,vy:-(R()*4+3.5),r:R()*3+2.2,a:1}));
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D);
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#6d4c41'; ctx.fillRect(W/2-80,H*.62,160,60);
-    ctx.fillStyle='#8d6e63'; ctx.fillRect(W/2-80,H*.62-26,160,26);
-    ctx.globalCompositeOperation='lighter';
-    for(const c of coins){
-      c.x+=c.vx; c.y+=c.vy; c.vy+=.12; c.a*=.993;
-      const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r*2.4);
-      g.addColorStop(0,`rgba(255,240,180,${c.a})`);
-      g.addColorStop(1,`rgba(255,215,80,0)`);
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,TAU); ctx.fill();
+    /* phoenix path (if active) */
+    if(this.flags.phoenix){
+      const t=(performance.now()-this.phoenixT0)/ (this.config.duration*1000); // normalized
+      const x=lerp(-W*.25, W*1.1, easeInOut(Math.min(1,t)));
+      const y=lerp(H*.75, H*.28, easeInOut(Math.min(1,t)));
+      // trail
+      const bloomScale = 1 + this.opts.bloom;
+      for(let i=0;i<50*this.particleScale;i++){
+        glow(x-R()*140, y+(R()*60-30), (R()*22+12)*bloomScale, (1-p)*(R()*0.4+0.35), '255,120,40');
+      }
+      // body glow
+      glow(x,y,50*bloomScale,0.95,'255,160,60');
+      // wingspan_plus combo
+      if(this.flags.wingspanPlus){ glow(x,y-30,40*bloomScale,0.8,'255,200,120'); glow(x,y+30,40*bloomScale,0.8,'255,200,120'); }
+      // crown (glyph)
+      if(this.flags.crown){
+        ctx.font='64px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';
+        ctx.textAlign='center'; ctx.fillText('👑', x, y-60);
+      }
+      // embers tail
+      if(this.flags.embers){
+        for(let i=0;i<24*this.particleScale;i++){
+          glow(x-(R()*80+20), y+(R()*20-10), R()*12+6, 0.35, '255,100,30');
+        }
+      }
     }
-    ctx.globalCompositeOperation='source-over';
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
-}
 
-/* Rolex — 5.0s */
-function rolexFX(){
-  if(!startFX()){ fallback('💎'); return }
-  const t0=performance.now(), D=5000, x=W/2, y=H/2, R0=28, R1=160;
-  (function loop(now){
-    const t=Math.min(1,(now-t0)/D);
-    ctx.clearRect(0,0,W,H);
-    ctx.globalCompositeOperation='lighter';
-    for(let i=0;i<40;i++){
-      const ang=i*(TAU/40) + now*0.006, r=lerp(R0,R1,t), px=x+Math.cos(ang)*r, py=y+Math.sin(ang)*r;
-      ctx.fillStyle=`hsla(${(i*12)%360},100%,70%,${1-t})`; ctx.beginPath(); ctx.arc(px,py,3,0,TAU); ctx.fill();
+    /* sigil */
+    if(this.flags.sigil){
+      const r=120; ctx.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){ glow(W/2,H*0.6,r+i*18,0.18,'255,200,120'); }
+      ctx.globalCompositeOperation='source-over';
     }
-    ctx.globalCompositeOperation='source-over';
-    glow(ctx,x,y,12,1,'255,255,255');
-    if(t<1) requestAnimationFrame(loop); else endFX();
-  })(t0);
+
+    /* sparks */
+    if(this.sparks && this.sparks.length){
+      ctx.globalCompositeOperation='lighter';
+      const dt=16;
+      this.sparks = this.sparks.filter(s=>{
+        s.age+=dt; s.x+=s.vx; s.y+=s.vy; s.vy+=0.06;
+        glow(s.x,s.y,3,1,'255,255,255');
+        return s.age < s.life;
+      });
+      ctx.globalCompositeOperation='source-over';
+    }
+
+    /* heat haze (simulated as warm overlay) */
+    if(this.opts.heat>0){
+      ctx.fillStyle=`rgba(255,120,40,${0.06*this.opts.heat})`;
+      ctx.fillRect(0,0,W,H);
+    }
+
+    /* rimlight pulse */
+    if(this.opts.rimlight){
+      glow(W/2,H*0.55,180,0.1,'255,220,180');
+    }
+
+    /* DOF focus (soft vignette) */
+    if(this.opts.dof){
+      const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.25,W/2,H/2,Math.max(W,H)*0.8);
+      g.addColorStop(0,'rgba(255,255,255,0)');
+      g.addColorStop(1,'rgba(0,0,0,0.12)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    }
+
+    /* shake */
+    if(this.opts.shakeMag>0){
+      const mag=this.opts.shakeMag*6;
+      EL.fx.style.transform=`translate(${(R()*mag-mag/2)|0}px, ${(R()*mag-mag/2)|0}px)`;
+      setTimeout(()=>{ EL.fx.style.transform=''; }, 0);
+    }
+  }
+
+  end(){
+    this.running=false; endFX();
+  }
 }
 
-/* ===== Dispatch ===== */
+/* ---------- Combo window tracker for Phoenix ---------- */
+const phoenixCombos=[];
+function recordPhoenixSend(){
+  const now=performance.now();
+  const cfg=JSON.parse($('#phoenix-config').textContent);
+  const windowMs=cfg.combo.window*1000;
+  // purge old
+  while(phoenixCombos.length && now-phoenixCombos[0]>windowMs) phoenixCombos.shift();
+  phoenixCombos.push(now);
+  return phoenixCombos.length;
+}
+
+/* ---------- Other billionaire FX (unchanged from v9 long versions) ---------- */
+function unicornFX(){ if(!startFX()) return fallback('🦄'); const t0=performance.now(), D=5500; ctx.font='64px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeInOut(t);ctx.clearRect(0,0,W,H);const x=lerp(-100,W+100,p), y=lerp(H*.65,H*.35,p);const g=ctx.createLinearGradient(x-260,y-60,x,y+60);['red','orange','yellow','lime','deepskyblue','indigo','violet'].forEach((c,i)=>g.addColorStop(i/6,c));ctx.globalAlpha=.9*(1-t);ctx.fillStyle=g;ctx.fillRect(x-260,y-28,240,56);ctx.globalAlpha=1;ctx.globalCompositeOperation='lighter';for(let i=0;i<54;i++){const sx=x-R()*220, sy=y+(R()*60-30);ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.arc(sx,sy,R()*2+1.2,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';ctx.fillText('🦄', x-24, y+18);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
+function jetFX(){ if(!startFX()) return fallback('✈️'); const t0=performance.now(), D=6000; ctx.font='60px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeInOut(t);ctx.clearRect(0,0,W,H);const x=lerp(-180,W+180,p), y=lerp(H*.55,H*.35,p);ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,255,255,.7)';ctx.fillRect(x-260,y-6,240,12);if(t>.25&&t<.65){const k=(t-.25)/.4, r=lerp(22,180,k);ctx.strokeStyle=`rgba(255,255,255,${1-k})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x-60,y,r,0,TAU);ctx.stroke()}ctx.globalCompositeOperation='source-over';ctx.fillText('🛩️', x-20, y+18);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
+function castleFX(){ if(!startFX()) return fallback('🏰'); const t0=performance.now(), D=6000; ctx.font='70px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeOutCubic(t), x=W/2, y=lerp(H*.82,H*.45,p);ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++) glow(x,y+14,150+i*26,0.12*(1-t),'180,220,255');for(let i=0;i<70;i++){const ang=R()*TAU, rr=R()*160; glow(x+Math.cos(ang)*rr, y+Math.sin(ang)*rr,3,0.9,'255,255,255')}ctx.globalCompositeOperation='source-over';ctx.textAlign='center';ctx.fillText('🏰', x, y);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
+function chestFX(){ if(!startFX()) return fallback('💰'); const t0=performance.now(), D=5500; const coins=Array.from({length:120},()=>({x:W/2+(R()*180-90),y:H*.62,vx:(R()*2-1)*2.2,vy:-(R()*4+3.5),r:R()*3+2.2,a:1}));(function f(now){const t=Math.min(1,(now-t0)/D);ctx.clearRect(0,0,W,H);ctx.fillStyle='#6d4c41';ctx.fillRect(W/2-80,H*.62,160,60);ctx.fillStyle='#8d6e63';ctx.fillRect(W/2-80,H*.62-26,160,26);ctx.globalCompositeOperation='lighter';for(const c of coins){c.x+=c.vx;c.y+=c.vy;c.vy+=.12;c.a*=.993;const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r*2.4);g.addColorStop(0,`rgba(255,240,180,${c.a})`);g.addColorStop(1,`rgba(255,215,80,0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
+function rolexFX(){ if(!startFX()) return fallback('💎'); const t0=performance.now(), D=5000, x=W/2, y=H/2, R0=28, R1=160;(function f(now){const t=Math.min(1,(now-t0)/D);ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';for(let i=0;i<40;i++){const ang=i*(TAU/40)+now*0.006, r=lerp(R0,R1,t), px=x+Math.cos(ang)*r, py=y+Math.sin(ang)*r;ctx.fillStyle=`hsla(${(i*12)%360},100%,70%,${1-t})`;ctx.beginPath();ctx.arc(px,py,3,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';glow(x,y,12,1,'255,255,255');if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
+
+/* ---------- Dispatch with phoenixRebirth ---------- */
 const dispatch={
-  // billionaire (now 5–6s each)
-  phoenixFX, unicornFX, castleFX, chestFX, jetFX, rolexFX,
+  // billionaire
+  phoenixRebirth:()=>{ // combo-aware
+    const count=recordPhoenixSend();
+    const effect=new PhoenixRebirth({ lod: (FPS<45?'lite':'standard') });
+    effect.preload().then(()=>{
+      effect.attachTo(null,null,null);
+      // apply combo tiers
+      if(count>=3) effect.flags.loopSecond=true;
+      if(count>=2) effect.flags.wingspanPlus=true;
+      effect.play({ onPeak: ()=>{/* flash UI etc */} });
+    });
+  },
+  unicornFX, castleFX, chestFX, jetFX, rolexFX,
+
   // simple fallbacks for non-billionaire
   party:()=>fallback('🥳'), lick:()=>fallback('😋'), butterfly:()=>fallback('🦋'),
   car:()=>fallback('🏎️'), rose:()=>fallback('🌹'), champagne:()=>fallback('🍾'),
@@ -430,9 +510,9 @@ const dispatch={
   snow:()=>fallback('❄️'), sun:()=>fallback('🌤'), crown:()=>fallback('👑'),
   planeSimple:()=>fallback('✈️'), yacht:()=>fallback('🛥️'), sparkle:()=>fallback('✨')
 };
-function runAnim(key, emoji){ (dispatch[key]||(()=>fallback(emoji)))() }
+function runAnim(key,emoji){ (dispatch[key]||(()=>fallback(emoji)))() }
 
-/* Interactions */
+/* ---------- Navigation / gifting / wallet ---------- */
 function show(id){Object.values(EL.screens).forEach(s=>s.classList.remove('active')); EL.screens[id].classList.add('active')}
 function mountNav(){
   const nav=el('nav','nav'); nav.innerHTML=`<a class="item" data-go="home"><div>🏠</div><div>Home</div></a>
@@ -453,26 +533,26 @@ function sendOne(giftEl){
 function bindGifting(){
   let combo=0, hold=null, pressing=false, highlighted=null;
   function select(el){ if(highlighted) highlighted.classList.remove('highlight'); highlighted=el; el.classList.add('highlight'); setTimeout(()=>{ if(highlighted===el) el.classList.remove('highlight')},1600)}
-  function startHold(el){ pressing=true; combo=0; if(sendOne(el)){ combo=1; showCombo(combo)} hold=setInterval(()=>{ if(sendOne(el)){ combo++; if(combo%2===0) showCombo(combo)} else stopHold()},180)}
+  function startHold(el){ pressing=true; combo=0; if(sendOne(el)){ combo=1; showCombo(combo)} hold=setInterval(()=>{ if(sendOne(el)){ combo++; if(combo%2===0) showCombo(combo)} else stopHold()},250)} // slowed a bit to enjoy FX
   function stopHold(){ pressing=false; clearInterval(hold); hold=null }
-  document.addEventListener('pointerdown',e=>{const el=e.target.closest('.gift'); if(!el) return; select(el); S.holdTimer=setTimeout(()=>startHold(el),180)})
+  document.addEventListener('pointerdown',e=>{const el=e.target.closest('.gift'); if(!el) return; select(el); S.holdTimer=setTimeout(()=>startHold(el),220)})
   document.addEventListener('pointerup',e=>{clearTimeout(S.holdTimer); const el=e.target.closest('.gift'); if(!el) return; if(!pressing) sendOne(el); stopHold()})
   document.addEventListener('pointerleave',()=>{clearTimeout(S.holdTimer); stopHold()})
 }
-
-/* Wallet + helpers */
 function bindWallet(){
-  EL.btnTopup.addEventListener('click',()=>{S.regular+=100; save(); updateUI(); showToast('+100 BuzzCoins')});
-  EL.btnReset.addEventListener('click',()=>{localStorage.removeItem('buzz_demo_v9'); S.regular=300; S.ad=0; S.spent=0; S.adsToday=0; S.lastAdDate=null; save(); updateUI(); showToast('Demo reset')});
-  let cool=false;
-  EL.btnWatchAd.addEventListener('click',()=>{
-    const today=new Date().toISOString().slice(0,10);
-    if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today}
-    if(S.adsToday>=5) return showToast('Daily ad limit reached');
-    if(cool) return showToast('Please wait 5s…');
-    S.ad+=1; S.adsToday+=1; save(); updateUI(); showToast('+1 from Ad');
-    cool=true; EL.btnWatchAd.disabled=true; setTimeout(()=>{cool=false; EL.btnWatchAd.disabled=false},5000);
-  });
+  if(EL.btnTopup) EL.btnTopup.addEventListener('click',()=>{S.regular+=100; save(); updateUI(); showToast('+100 BuzzCoins')});
+  if(EL.btnReset) EL.btnReset.addEventListener('click',()=>{localStorage.removeItem('buzz_demo_v10'); S.regular=300; S.ad=0; S.spent=0; S.adsToday=0; S.lastAdDate=null; save(); updateUI(); showToast('Demo reset')});
+  if(EL.btnWatchAd){
+    let cool=false;
+    EL.btnWatchAd.addEventListener('click',()=>{
+      const today=new Date().toISOString().slice(0,10);
+      if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today}
+      if(S.adsToday>=5) return showToast('Daily ad limit reached');
+      if(cool) return showToast('Please wait 5s…');
+      S.ad+=1; S.adsToday+=1; save(); updateUI(); showToast('+1 from Ad');
+      cool=true; EL.btnWatchAd.disabled=true; setTimeout(()=>{cool=false; EL.btnWatchAd.disabled=false},5000);
+    });
+  }
   // balance gestures
   let taps=0, tapTimer=null, pressTimer=null;
   EL.balance.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>{ S.regular+=500; save(); updateUI(); showToast('+500 (long-press)') }, 600); });
@@ -481,25 +561,19 @@ function bindWallet(){
     tapTimer=setTimeout(()=>{ if(taps>=3){ S.regular+=100; save(); updateUI(); showToast('+100 (triple-tap)') } taps=0; }, 320);
   });
 }
-
-/* Preview + Grant */
 function bindTestHelpers(){
   EL.btnPreviewBillion.addEventListener('click',()=>{
-    const seq=['phoenixFX','unicornFX','castleFX','chestFX','jetFX','rolexFX'];
-    // 6.5s spacing so each 5–6s effect finishes before the next begins
-    seq.forEach((k,i)=>setTimeout(()=>runAnim(k,''), i*6500));
-    showToast('Previewing Billionaire FX (long)');
+    const seq=['phoenixRebirth','unicornFX','castleFX','chestFX','jetFX','rolexFX'];
+    seq.forEach((k,i)=>setTimeout(()=>runAnim(k,''), i*7000)); // give each ~7s window
+    showToast('Previewing Billionaire FX (incl. Phoenix timeline)');
   });
-  EL.btnGrant20k.addEventListener('click',()=>{
-    S.regular+=20000; save(); updateUI(); showToast('+20,000 BuzzCoins (dev)');
-  });
+  EL.btnGrant20k.addEventListener('click',()=>{ S.regular+=20000; save(); updateUI(); showToast('+20,000 BuzzCoins (dev)')});
 }
 
-/* Boot */
+/* ---------- Boot ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
-  try{
-    load(); updateUI(); mountGifts(); bindGifting(); bindWallet(); bindTestHelpers(); mountNav();
-  }catch(e){ showErr('Init error: '+(e?.message||e)); }
+  try{ load(); updateUI(); mountGifts(); bindGifting(); bindWallet(); bindTestHelpers(); mountNav(); }
+  catch(e){ showErr('Init error: '+(e?.message||e)); }
 });
 </script>
 </body>
