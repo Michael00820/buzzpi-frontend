@@ -356,4 +356,67 @@ function bindGifting(){
     // If short tap (no interval yet), treat as single send
     const el = e.target.closest('.gift'); if(!el) return;
     if(!pressing){
-      const price = +el.dataset.price; const
+      const price = +el.dataset.price; const emoji = el.querySelector('.emo').textContent;
+      sendOne(emoji, price);
+    }
+    stopHold();
+  });
+  document.addEventListener('pointerleave', ()=>{ clearTimeout(S.holdTimer); stopHold(); });
+}
+
+/*** WALLET ACTIONS ***/
+function bindWallet(){
+  // top-up (demo only)
+  EL.btnTopup.addEventListener('click', ()=>{
+    S.regular += 100; save(); updateUI(); toast('+100 BuzzCoins');
+  });
+  // watch ad
+  let adCooldown=false;
+  EL.btnWatchAd.addEventListener('click', ()=>{
+    const today = new Date().toISOString().slice(0,10);
+    if(S.lastAdDate !== today){ S.adsToday=0; S.lastAdDate=today; }
+    if(S.adsToday >= 5){ toast('Daily ad limit reached'); return; }
+    if(adCooldown){ toast('Please wait 5s…'); return; }
+    // credit +1 coin
+    S.ad += 1; S.adsToday += 1; save(); updateUI(); toast('+1 from Ad');
+    // 5s cooldown
+    adCooldown=true; EL.btnWatchAd.disabled=true;
+    setTimeout(()=>{ adCooldown=false; EL.btnWatchAd.disabled=false; }, 5000);
+  });
+}
+
+/*** NAVIGATION ***/
+function show(id){
+  Object.values(EL.screens).forEach(s=>s.classList.remove('active'));
+  EL.screens[id].classList.add('active');
+}
+function mountNav(){
+  const nav = document.createElement('nav');
+  nav.className='nav';
+  nav.innerHTML = `
+    <a class="item" data-go="home"><div>🏠</div><div>Home</div></a>
+    <a class="item" data-go="gifts"><div>🎁</div><div>Gifts</div></a>
+    <button class="honeypot" title="Go Live"></button>
+    <a class="item" data-go="wallet"><div>💰</div><div>Wallet</div></a>
+    <a class="item" data-go="profile"><div>👤</div><div>Profile</div></a>
+  `;
+  document.body.appendChild(nav);
+  nav.addEventListener('click', e=>{
+    const a = e.target.closest('[data-go]'); if(!a) return;
+    const to = a.getAttribute('data-go'); show(to);
+  });
+  document.querySelector('.honeypot').addEventListener('click', ()=>{
+    toast('Go Live (demo) — honeypot button!');
+  });
+}
+
+/*** INIT ***/
+load();
+updateUI();
+mountGifts();
+bindGifting();
+bindWallet();
+mountNav();
+</script>
+</body>
+</html>
