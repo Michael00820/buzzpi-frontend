@@ -1,580 +1,556 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BuzzPi — Demo (v10 • Phoenix Rebirth Timeline)</title>
-<meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<title>BuzzPi – Gift Lab</title>
 <style>
-  :root{--bg:#fff;--fg:#0e0e12;--muted:#68707a;--card:#f7f8fa;--gold:#f7c948;--gold2:#e8b12e;--accent:#7b5df9;--ring:0 6px 18px rgba(0,0,0,.12)}
-  @media (prefers-color-scheme: dark){:root{--bg:#0b0b0f;--fg:#eef0f3;--muted:#98a0aa;--card:#111318;--ring:0 8px 24px rgba(0,0,0,.45)}}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  .app{max-width:800px;margin:0 auto;padding-bottom:96px}
-  header{position:sticky;top:0;z-index:30;background:var(--bg);padding:12px 16px;border-bottom:1px solid rgba(127,127,127,.15)}
-  .row{display:flex;gap:12px;align-items:center;justify-content:space-between}
-  .logo{display:flex;gap:10px;align-items:center;font-weight:800}
-  .logo-badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:var(--ring)}
-  .tabs{display:flex;gap:8px;overflow:auto;padding:10px 16px}
-  .chip{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:var(--card);font-weight:600;color:var(--muted)}
-  .chip.active{background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff}
-  .screen{display:none;padding:12px 16px}.screen.active{display:block}
+  :root{
+    --bg:#0f0f12; --fg:#e6e6ec; --muted:#9aa0a6; --brand:#7c4dff; --accent:#ffd166;
+    --card:#17171b; --card2:#1e1f25; --ok:#34d399; --bad:#ef4444; --warn:#f59e0b;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f7f7fb; --fg:#121219; --muted:#5c6270; --brand:#5b38ff; --accent:#c59000;
+           --card:#ffffff; --card2:#f1f2f6; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;}
+  .app{min-height:100dvh;padding-bottom:92px}
+  header{
+    position:sticky;top:0;z-index:20;padding:14px 16px 10px;background:
+      linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.0)),
+      radial-gradient(1200px 300px at 10% -10%, rgba(124,77,255,.2),transparent 60%),
+      radial-gradient(1200px 300px at 90% -10%, rgba(255,209,102,.18),transparent 60%);
+    backdrop-filter:saturate(130%) blur(4px);
+    display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .logo{width:28px;height:28px;border-radius:6px;background:#f2b84d}
+  .brand{font-weight:800;letter-spacing:.2px}
+  .tabs{display:flex;gap:10px;margin-top:8px;overflow:auto;padding-bottom:2px}
+  .chip{padding:6px 12px;border-radius:14px;background:var(--card2);color:var(--muted);white-space:nowrap;border:1px solid rgba(255,255,255,.06)}
+  .chip.active{background:var(--brand);color:white}
 
-  .card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--ring);margin-bottom:14px}
-  .coins{font-size:28px;font-weight:800}
-  .muted{color:var(--muted);font-size:13px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;min-height:44px}
-  .btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#212121}
-  .btn.secondary{background:linear-gradient(135deg,#222,#333)}
-  .btn.small{font-size:12px;padding:10px 12px}
-  .rowBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .rowBtns.onecol{grid-template-columns:1fr}
+  /* Screens */
+  .screen{display:none;padding:16px}
+  .screen.active{display:block}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;margin-bottom:14px}
+  .muted{color:var(--muted)}
+  .small{font-size:.9rem}
 
-  .small{font-size:12px}
-  .bar{height:10px;background:#1f2330;border-radius:999px;overflow:hidden}
-  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5b35f6,#7b5df9)}
+  /* Grid of gifts */
+  .gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .gift{background:var(--card2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 4px;
+        text-align:center;cursor:pointer;position:relative;user-select:none;transition:transform .12s ease, box-shadow .12s ease}
+  .gift:hover{transform:translateY(-2px)}
+  .gift.selected{animation:breathe 1.2s ease-in-out infinite}
+  @keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .gift .emo{font-size:26px;display:block}
+  .gift .name{font-size:.76rem;margin-top:4px;color:var(--muted)}
+  .gift .price{position:absolute;right:6px;top:6px;background:#0009;color:#fff;padding:2px 6px;border-radius:10px;font-size:.7rem}
 
-  .gsec{margin:18px 0}
-  .gtitle{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
-  .gtitle span{font-weight:800}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  @media (max-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .gift{background:var(--card);border-radius:14px;padding:10px;text-align:center;cursor:pointer;user-select:none;position:relative;box-shadow:var(--ring);transition:.2s}
-  .gift .emo{font-size:26px;line-height:1}
-  .gift .name{font-size:11px;color:var(--muted);margin-top:4px}
-  .gift .price{font-size:12px;font-weight:800;margin-top:4px}
-  .gift:active{transform:scale(.98)}
-  .gift[data-tier="billionaire"]{outline:2px solid rgba(247,201,72,.25)}
-  .gift[data-tier="rare"]{outline:2px solid rgba(91,53,246,.25)}
+  /* Overlay for animations */
+  .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+  .fx-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 
-  .gift.highlight::after{content:"";position:absolute;inset:-2px;border-radius:16px;box-shadow:0 0 0 0 rgba(123,93,249,.5);animation:heartbeat 1200ms ease-in-out infinite}
-  @keyframes heartbeat{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,.45)}25%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.15)}50%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}75%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.12)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}}
+  /* Some reusable effects */
+  @keyframes confettiFall{0%{transform:translateY(-120vh) rotate(0deg)}100%{transform:translateY(120vh) rotate(720deg)}}
+  @keyframes sparkle{0%,100%{opacity:.2;transform:scale(.95)}50%{opacity:1;transform:scale(1.15)}}
+  @keyframes flutter{0%{transform:translate(-50%,-50%) rotate(0) scale(1)}50%{transform:translate(-30%,-65%) rotate(10deg) scale(1.2)}100%{transform:translate(60%,-40%) rotate(-5deg) scale(1)}}
+  @keyframes lick{0%{transform:translateY(0)}30%{transform:translateY(-4px)}60%{transform:translateY(2px)}100%{transform:translateY(0)}}
+  @keyframes drift{0%{transform:translate(-120%,40px) rotate(-10deg)}40%{transform:translate(0%,0) rotate(0deg)}65%{transform:translate(25%,-8px) rotate(3deg)}100%{transform:translate(120%,20px) rotate(2deg)}}
+  .shadow{filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-  .stage{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:20}
-  .combo{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-weight:900;font-size:28px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;padding:6px 12px;border-radius:12px;box-shadow:var(--ring);opacity:0;animation:combo .3s ease forwards}
-  @keyframes combo{to{opacity:1;transform:translateX(-50%) scale(1.05)}}
+  /* Bottom nav */
+  nav.bottom{
+    position:fixed;inset:auto 0 0 0;height:82px;background:rgba(16,16,20,.85);backdrop-filter:blur(8px);
+    border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-around;align-items:center;z-index:40
+  }
+  nav .nav-btn{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:.82rem}
+  nav .nav-btn.active{color:#fff}
+  nav .nav-btn .ico{font-size:20px}
+  .honeypot{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:24px;width:92px;height:92px;border-radius:50%;
+    display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 40%, #ffd166, #ff9f1a);box-shadow:0 12px 30px rgba(255,179,0,.35);
+    border:6px solid rgba(255,255,255,.2);z-index:41
+  }
+  .honeypot .jar{font-size:34px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+  .honeypot:active{transform:translateX(-50%) scale(.98)}
 
-  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid rgba(127,127,127,.15);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px;z-index:30}
-  .nav .item{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted);text-decoration:none}
-  .honeypot{position:relative;top:-22px;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,transparent),linear-gradient(135deg,#fce38a,#f38181);box-shadow:0 10px 30px rgba(243,129,129,.35), inset 0 0 0 4px rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;border:0}
-  .honeypot:after{content:"🍯";font-size:28px}
-  .honeypot:active{transform:scale(.97)}
-
-  .toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #fff2;color:#fff;padding:10px 14px;border-radius:10px;backdrop-filter:blur(8px);font-size:13px;opacity:0;transition:.25s;z-index:40}
-  .toast.show{opacity:1}
-
-  .err{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#ff3b30cc;color:#fff;padding:8px 12px;border-radius:10px;font-size:12px;z-index:50;display:none}
-  .footerNote{opacity:.6;text-align:center;font-size:11px;margin:20px 0}
-
-  /* Canvas FX + badge */
-  #fx{position:fixed;inset:0;pointer-events:none;z-index:1000;display:none}
-  #fxBadge{position:fixed;top:8px;left:8px;z-index:1001;background:#0009;color:#fff;border:1px solid #fff3;border-radius:8px;padding:4px 8px;font-size:11px;display:none}
-  #banner{position:fixed;top:12%;left:50%;transform:translateX(-50%);z-index:1002;background:linear-gradient(135deg,#ffd54f,#ffb300);color:#2b2100;border-radius:14px;padding:8px 14px;font-weight:900;letter-spacing:.6px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  /* Toasts / banner */
+  .toast{position:fixed;left:50%;top:10px;transform:translateX(-50%);background:#111c;border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:10px;z-index:60}
+  .toast.bad{background:#2b0d0d;color:#fff;border-color:#ff4d4d}
+  .toast.ok{background:#0e2a1f;border-color:#34d399}
+  .console{background:#000c;color:#d9e3ff;border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem}
+  .link{color:#9abaff;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
-<div class="err" id="err"></div>
-
 <div class="app">
   <header>
-    <div class="row">
-      <div class="logo"><div class="logo-badge"></div> BuzzPi</div>
-      <div class="coins" id="balance" title="Triple-tap: +100 • Long-press: +500">0</div>
+    <div class="logo"></div>
+    <div>
+      <div class="brand">BuzzPi</div>
+      <div class="tabs" id="homeTabs">
+        <div class="chip active">Following</div>
+        <div class="chip">Popular</div>
+        <div class="chip">Nearby</div>
+        <div class="chip">New</div>
+      </div>
     </div>
-    <div class="tabs" id="topTabs">
-      <div class="chip active">Following</div><div class="chip">Popular</div>
-      <div class="chip">Nearby</div><div class="chip">Newcomers</div><div class="chip">Trending</div>
-    </div>
+    <div style="margin-left:auto;font-weight:800" id="balance">0</div>
   </header>
 
+  <!-- Screens -->
   <section class="screen active" id="scrHome">
-    <div class="card"><div class="row">
-      <div>
-        <div style="font-weight:800">Welcome to BuzzPi (Demo)</div>
-        <div class="muted">Tap the Gifts tab to try <b>alive</b> animations & coin flow.</div>
-      </div>
-      <div class="muted small">Theme-adaptive ✓</div>
-    </div></div>
+    <div class="card">
+      <div style="font-weight:800">Welcome 👋</div>
+      <div class="muted small">This is a lightweight sandbox to try BuzzCoin gifts and FX. Tap <b>Gifts</b> below to play.</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:800;margin-bottom:8px">If anything looks cached</div>
+      <div class="muted small">Hard-refresh with <span class="link" id="forceReload">?v=<span id="vNum">10</span></span>.</div>
+    </div>
   </section>
 
   <section class="screen" id="scrGifts">
     <div class="card">
-      <div class="row" style="gap:10px;flex-wrap:wrap">
-        <div class="muted small">Testing helpers:</div>
-        <button class="btn small" id="btnPreviewBillion">Preview Billionaire FX</button>
-        <button class="btn secondary small" id="btnGrant20k">Grant +20,000 (dev)</button>
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:800">Gifts</div>
+          <div class="muted small">Tap to send. Long-press for rapid combo.</div>
+        </div>
+        <div class="row">
+          <button class="btn ghost" id="watchAd">Watch ad (+1)</button>
+          <button class="btn ghost" id="devAdd">Dev +50</button>
+        </div>
       </div>
-      <div class="muted small" style="margin-top:6px">Phoenix now uses your timeline JSON (8s). Preview cycles all billionaire FX.</div>
     </div>
 
-    <div class="gsec"><div class="gtitle"><span>Common</span><small class="muted">1–20 BuzzCoins</small></div><div class="grid" id="gridCommon"></div></div>
-    <div class="gsec"><div class="gtitle"><span>Rare</span><small class="muted">50–500 BuzzCoins</small></div><div class="grid" id="gridRare"></div></div>
-    <div class="gsec"><div class="gtitle"><span>Billionaire</span><small class="muted">1,000–10,000 BuzzCoins</small></div><div class="grid" id="gridBillion"></div></div>
+    <div class="card">
+      <div class="tabs" id="giftTabs">
+        <div class="chip active" data-cat="common">Common</div>
+        <div class="chip" data-cat="rare">Rare</div>
+        <div class="chip" data-cat="billion">Billionaire</div>
+      </div>
+
+      <div id="giftWrap" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800">Console</div>
+      <div class="console" id="log">Ready.</div>
+    </div>
   </section>
 
   <section class="screen" id="scrWallet">
     <div class="card">
-      <div class="coins"><span id="cRegular">0</span> <span class="muted">BuzzCoins</span></div>
-      <div class="muted">Ad-earned balance: <b id="cAd">0</b> (gifting only)</div>
-      <div class="muted small" id="adInfo"></div>
-      <div class="rowBtns" style="margin-top:12px">
-        <button class="btn gold" id="btnTopup">Top up +100</button>
-        <button class="btn" id="btnWatchAd">Watch Ad (+1)</button>
-      </div>
-      <div class="rowBtns onecol" style="margin-top:8px">
-        <button class="btn secondary small" id="btnReset">Reset demo</button>
-      </div>
-      <div class="muted small" style="margin-top:8px">Ad limit: 5/day • 5s cooldown • Tip: triple-tap balance for +100, long-press for +500</div>
+      <div style="font-weight:800">Wallet</div>
+      <div class="muted small">This demo wallet only tracks local BuzzCoin for testing gifts.</div>
     </div>
-
     <div class="card">
       <div class="row">
-        <div>
-          <div style="font-weight:800">Level <span id="level">1</span></div>
-          <div class="muted">Spend 500 coins on gifts to level up</div>
-        </div>
-        <div class="muted small">Progress: <b id="lvPct">0%</b></div>
+        <button class="btn" id="devAdd100">Dev +100</button>
+        <button class="btn ghost" id="devReset">Reset balance</button>
       </div>
-      <div class="bar" style="margin-top:12px"><i id="lvBar"></i></div>
-      <div class="muted small" id="lvHint" style="margin-top:8px"></div>
     </div>
   </section>
-  <div class="footerNote">If anything looks cached, reload with <code>?v=10</code>.</div>
+
+  <section class="screen" id="scrProfile">
+    <div class="card">
+      <div style="font-weight:800">Profile</div>
+      <div class="muted small">Placeholder — we’ll wire this to real accounts later.</div>
+    </div>
+  </section>
+
+  <!-- FX overlay -->
+  <div class="fx-layer" id="fx"></div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom">
+    <button class="nav-btn" data-target="scrHome"><div class="ico">🏠</div>Home</button>
+    <button class="nav-btn" data-target="scrGifts"><div class="ico">🎁</div>Gifts</button>
+
+    <button class="honeypot" id="goLive" title="Go Live (mock)">
+      <div class="jar">🍯</div>
+    </button>
+
+    <button class="nav-btn" data-target="scrWallet"><div class="ico">💰</div>Wallet</button>
+    <button class="nav-btn" data-target="scrProfile"><div class="ico">👤</div>Profile</button>
+  </nav>
 </div>
 
-<div class="stage" id="stage"></div>
-<canvas id="fx"></canvas>
-<div id="fxBadge">FX RUNNING</div>
-<div id="banner">REBIRTH</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- Your Phoenix JSON config -->
-<script type="application/json" id="phoenix-config">
-{
-  "id": "gift.phoenix_rebirth",
-  "version": "1.0.0",
-  "lod": ["lite","standard","cinematic"],
-  "duration": 8.0,
-  "beats": [
-    {"t":0.0, "actions":["grade:warm_in","vignette:0.25","bloom:0.4","sfx:rumble_in","rimlight:on"]},
-    {"t":0.6, "actions":["ignite_sigil","particles:sparks_burst","sfx:impact","heat:on"]},
-    {"t":2.2, "actions":["phoenix:enter_from_bg","dof:focus_near","shake:0.35@60ms","sfx:whoosh_in"]},
-    {"t":4.2, "actions":["phoenix:crown_form","banner:show","sfx:choir_hit","bloom:0.8"]},
-    {"t":6.0, "actions":["embers:tail","heat:fade_out","grade:neutral_out","banner:hold"]},
-    {"t":8.0, "actions":["end"]}
-  ],
-  "combo": {"window": 8.0, "tiers":[{"min":2,"effect":"wingspan_plus"},{"min":3,"effect":"loop_second_pass"}]}
-}
-</script>
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none"></div>
 
 <script>
-/* ---------- Utilities, state, UI ---------- */
-function $(s){return document.querySelector(s)}
-function el(t,c){const d=document.createElement(t); if(c) d.className=c; return d}
-function showToast(m,ms=1600){const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms)}
-function showErr(m){const e=$('#err'); e.textContent=m; e.style.display='block'; setTimeout(()=>e.style.display='none',4000)}
-window.onerror=(m,src,l,c,e)=>showErr('JS error: '+(e?.message||m));
-window.onunhandledrejection=(ev)=>showErr('Promise error: '+(ev?.reason?.message||ev?.reason||'unknown'));
-
-const S={regular:300,ad:0,spent:0,adsToday:0,lastAdDate:null,holdTimer:null};
-function save(){localStorage.setItem('buzz_demo_v10',JSON.stringify(S))}
-function load(){try{Object.assign(S,JSON.parse(localStorage.getItem('buzz_demo_v10')||'{}'))}catch(_){}
-
-}
-const EL={
-  screens:{home:$('#scrHome'),gifts:$('#scrGifts'),wallet:$('#scrWallet'),profile:$('#scrProfile')},
-  balance:$('#balance'), cRegular:$('#cRegular'), cAd:$('#cAd'),
-  adInfo:$('#adInfo'), level:$('#level'), lvBar:$('#lvBar'), lvPct:$('#lvPct'), lvHint:$('#lvHint'),
-  gridCommon:$('#gridCommon'),gridRare:$('#gridRare'),gridBillion:$('#gridBillion'),
-  stage:$('#stage'), fx:$('#fx'), fxBadge:$('#fxBadge'), banner:$('#banner'),
-  btnTopup:$('#btnTopup'), btnWatchAd:$('#btnWatchAd'), btnReset:$('#btnReset'),
-  btnPreviewBillion:$('#btnPreviewBillion'), btnGrant20k:$('#btnGrant20k')
+/* ----------------------- tiny helpers ----------------------- */
+const $ = sel => document.querySelector(sel);
+const el = id => document.getElementById(id);
+const log = (...a)=>{ const L=el('log'); L.textContent = a.join(' '); L.scrollTop=L.scrollHeight; };
+const toast = (msg,type='ok',ms=1800)=>{
+  const t = el('toast'); t.className = 'toast '+type; t.textContent = msg; t.style.display='block';
+  clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',ms);
 };
-function fmt(n){return n.toLocaleString()}
-function updateUI(){
-  $('#balance').textContent=fmt(S.regular+S.ad);
-  if(EL.cRegular) EL.cRegular.textContent=fmt(S.regular);
-  if(EL.cAd) EL.cAd.textContent=fmt(S.ad);
-  const today=new Date().toISOString().slice(0,10);
-  if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today;save()}
-  if(EL.adInfo) EL.adInfo.textContent=`Ads watched today: ${S.adsToday}/5`;
-  const per=500, lvl=Math.min(99,Math.floor(S.spent/per)+1), into=S.spent%per, pct=Math.round(into/per*100);
-  if(EL.level) EL.level.textContent=lvl;
-  if(EL.lvPct) EL.lvPct.textContent=pct+'%';
-  if(EL.lvBar) EL.lvBar.style.width=pct+'%';
-  if(EL.lvHint) EL.lvHint.textContent=`${fmt(per-into)} coins to Level ${Math.min(99,lvl+1)}`;
-}
-function spend(amount){
-  if(amount>S.regular+S.ad) return false;
-  const useAd=Math.min(S.ad,amount); S.ad-=useAd; S.regular-=(amount-useAd); S.spent+=amount; save(); updateUI(); return true;
+
+/* ----------------------- state ----------------------- */
+const STATE = {
+  balance: 300,                    // start with some coins
+  ad: {max:5, cooldown:5, count:0, last:0},   // per day
+  holdTimer: null,
+  selectedGift: null,
+};
+
+const EL = {
+  screens: {
+    scrHome: el('scrHome'),
+    scrGifts: el('scrGifts'),
+    scrWallet: el('scrWallet'),
+    scrProfile: el('scrProfile'),
+  },
+  fx: el('fx'),
+  giftWrap: el('giftWrap'),
+  balance: el('balance')
+};
+
+/* ----------------------- null-safe screen switch ----------------------- */
+function show(id){
+  const screens = Object.values(EL.screens).filter(Boolean);
+  screens.forEach(s=>s.classList.remove('active'));
+  const target = EL.screens[id];
+  if (target) target.classList.add('active');
+  // update nav state
+  document.querySelectorAll('nav .nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.target===id);
+  });
 }
 
-/* ---------- Gifts data ---------- */
-const gifts={
-  common:[
-    {emoji:'🥳',name:'Party',price:1,anim:'party'},{emoji:'🥰',name:'Hearts',price:1,anim:'sparkle'},
-    {emoji:'😍',name:'Love Eyes',price:1,anim:'sparkle'},{emoji:'😋',name:'Yum',price:1,anim:'lick'},
-    {emoji:'🤗',name:'Hug',price:1,anim:'sparkle'},{emoji:'🤩',name:'Starry',price:1,anim:'sparkle'},
-    {emoji:'🤑',name:'Cashy',price:1,anim:'coins'},{emoji:'🍭',name:'Lollipop',price:2,anim:'sparkle'},
-    {emoji:'🍬',name:'Candy',price:2,anim:'sparkle'},{emoji:'🍫',name:'Chocolate',price:2,anim:'sparkle'},
-    {emoji:'🍸',name:'Cocktail',price:5,anim:'sparkle'},{emoji:'🍎',name:'Apple',price:5,anim:'sparkle'},
-    {emoji:'🍺',name:'Beer',price:5,anim:'sparkle'},{emoji:'🌹',name:'Rose',price:10,anim:'rose'},
-    {emoji:'🌸',name:'Blossom',price:10,anim:'rose'},{emoji:'✨',name:'Sparkle',price:10,anim:'sparkle'},
-    {emoji:'💐',name:'Bouquet',price:20,anim:'rose'},{emoji:'🍻',name:'Cheers',price:20,anim:'clink'},
-    {emoji:'👏',name:'Clap',price:20,anim:'clap'},{emoji:'💋',name:'Kiss',price:20,anim:'kiss'}
+document.querySelectorAll('nav .nav-btn').forEach(b=>{
+  b.addEventListener('click', ()=> show(b.dataset.target));
+});
+el('forceReload').addEventListener('click', ()=>{
+  const v = Number(el('vNum').textContent||10)+1;
+  location.href = location.origin + '/?v='+v;
+});
+
+/* ----------------------- balance ----------------------- */
+function fmt(n){ return n.toLocaleString(); }
+function updateBalance(){ EL.balance.textContent = fmt(STATE.balance); }
+updateBalance();
+
+/* ----------------------- gifts catalog ----------------------- */
+const CATALOG = {
+  common: [
+    {id:'party', emo:'🥳', name:'Party', price:1},
+    {id:'hearts', emo:'🥰', name:'Hearts', price:1},
+    {id:'love', emo:'😍', name:'Love', price:1},
+    {id:'yum', emo:'😋', name:'Yum', price:1},
+    {id:'hug', emo:'🤗', name:'Hug', price:1},
+    {id:'starry', emo:'🤩', name:'Starry', price:1},
+    {id:'rich', emo:'🤑', name:'Making it', price:1},
+    {id:'lolly', emo:'🍭', name:'Lolly', price:2},
+    {id:'candy', emo:'🍬', name:'Candy', price:2},
+    {id:'choc', emo:'🍫', name:'Choco', price:2},
+    {id:'martini', emo:'🍸', name:'Martini', price:5},
+    {id:'apple', emo:'🍎', name:'Apple', price:5},
+    {id:'beer', emo:'🍺', name:'Beer', price:5},
+    {id:'rose', emo:'🌹', name:'Rose', price:10},
+    {id:'sakura', emo:'🌸', name:'Sakura', price:10},
+    {id:'sparkle', emo:'✨️', name:'Sparkles', price:10},
+    {id:'bouquet', emo:'💐', name:'Bouquet', price:20},
+    {id:'cheers', emo:'🍻', name:'Cheers', price:20},
+    {id:'clap', emo:'👏', name:'Clap', price:20},
+    {id:'kiss', emo:'💋', name:'Kiss', price:20},
   ],
-  rare:[
-    {emoji:'🦋',name:'Butterfly',price:50,anim:'butterfly'},{emoji:'🌩',name:'Storm',price:50,anim:'storm'},
-    {emoji:'🌤',name:'Sunrise',price:50,anim:'sun'},{emoji:'🌈',name:'Rainbow',price:50,anim:'rainbow'},
-    {emoji:'❄️',name:'Snow',price:50,anim:'snow'},{emoji:'🧸',name:'Teddy',price:100,anim:'sparkle'},
-    {emoji:'🐇',name:'Bunny',price:100,anim:'sparkle'},{emoji:'🍾',name:'Champagne',price:100,anim:'champagne'},
-    {emoji:'👑',name:'Crown',price:100,anim:'crown'},{emoji:'🍷',name:'Wine',price:100,anim:'sparkle'},
-    {emoji:'🥂',name:'Toast',price:100,anim:'clink'},{emoji:'🏎️',name:'Jade Lamborghini',price:500,anim:'car'},
-    {emoji:'✈️',name:'Crystal Aeroplane',price:500,anim:'planeSimple'},{emoji:'🚙',name:'Golden Hummer',price:500,anim:'car'},
-    {emoji:'🛥️',name:'Yacht',price:500,anim:'yacht'}
+  rare: [
+    {id:'butterfly', emo:'🦋', name:'Butterfly', price:50},
+    {id:'storm', emo:'🌩', name:'Storm', price:50},
+    {id:'sun', emo:'🌤', name:'Sunbeam', price:50},
+    {id:'rainbow', emo:'🌈', name:'Rainbow', price:50},
+    {id:'snow', emo:'❄️', name:'Snow', price:50},
+    {id:'teddy', emo:'🧸', name:'Teddy', price:100},
+    {id:'bunny', emo:'🐇', name:'Bunny', price:100},
+    {id:'champ', emo:'🍾', name:'Champagne', price:100},
+    {id:'crown', emo:'👑', name:'Crown', price:100},
+    {id:'wine', emo:'🍷', name:'Wine', price:100},
+    {id:'flutes', emo:'🥂', name:'Flutes', price:100},
+    {id:'jadeLambo', emo:'🚗', name:'Jade Lamborghini', price:500},
+    {id:'crystalPlane', emo:'✈️', name:'Crystal Aeroplane', price:500},
+    {id:'goldHummer', emo:'🚙', name:'Golden Hummer', price:500},
+    {id:'yacht', emo:'🛥️', name:'Yacht', price:500},
   ],
-  billionaire:[
-    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000,anim:'phoenixRebirth'},  <!-- uses your JSON timeline -->
-    {emoji:'🦄',name:'Racing Unicorn',price:1000,anim:'unicornFX'},
-    {emoji:'🏰',name:'Crystal Castle',price:1000,anim:'castleFX'},
-    {emoji:'💰',name:'Treasure Chest',price:1000,anim:'chestFX'},
-    {emoji:'🏯☁️',name:'Mansion in the Sky',price:5000,anim:'castleFX'},
-    {emoji:'🧜‍♀️',name:'Mermaid',price:5000,anim:'sparkle'},
-    {emoji:'💘',name:'Cupids',price:5000,anim:'sparkle'},
-    {emoji:'🧝‍♀️',name:'Elf Queen',price:5000,anim:'sparkle'},
-    {emoji:'🛩️✨',name:'Golden Private Jet',price:10000,anim:'jetFX'},
-    {emoji:'💎⌚',name:'Diamond Rolex',price:10000,anim:'rolexFX'},
-    {emoji:'🐎🚗',name:'Chariots of Horses',price:10000,anim:'unicornFX'}
+  billion: [
+    {id:'phoenix', emo:'🔥', name:'Fiery Phoenix', price:1000},
+    {id:'unicorn', emo:'🦄', name:'Racing Unicorn', price:1000},
+    {id:'castle', emo:'🏰', name:'Crystal Castle', price:1000},
+    {id:'treasure', emo:'🪙', name:'Pirate Chest', price:1000},
+    {id:'skyMansion', emo:'🏙️', name:'Mansion in the Sky', price:5000},
+    {id:'mermaid', emo:'🧜‍♀️', name:'Mermaid', price:5000},
+    {id:'cupids', emo:'🏹', name:'Cupids', price:5000},
+    {id:'elfQueen', emo:'👑', name:'Elf Queen', price:5000},
+    {id:'goldJet', emo:'🛩️', name:'Golden Private Jet', price:10000},
+    {id:'rolex', emo:'⌚', name:'Diamond Rolex', price:10000},
+    {id:'chariots', emo:'🐎', name:'Chariots of Horses', price:10000},
   ]
 };
 
-/* ---------- Render gift grids ---------- */
-function giftEl(g){const e=el('div','gift'); e.dataset.price=g.price; e.dataset.anim=g.anim||''; e.dataset.name=g.name; e.innerHTML=`<div class="emo">${g.emoji}</div><div class="name">${g.name}</div><div class="price">${fmt(g.price)}🪙</div>`; return e}
-function mountGifts(){
-  gifts.common.forEach(g=>EL.gridCommon.appendChild(giftEl(g)));
-  gifts.rare.forEach(g=>{const e=giftEl(g); e.dataset.tier='rare'; EL.gridRare.appendChild(e)});
-  gifts.billionaire.forEach(g=>{const e=giftEl(g); e.dataset.tier='billionaire'; EL.gridBillion.appendChild(e)});
-}
-
-/* ---------- DOM fallback particles (for non-billionaire) ---------- */
-function center(){return {x:innerWidth/2,y:innerHeight/2}}
-function add(node,ms=1000){EL.stage.appendChild(node); setTimeout(()=>node.remove(),ms)}
-function fallback(emoji){const p=el('div','pop');const {x,y}=center();p.textContent=emoji||'✨';p.style.left=(x-28)+'px';p.style.top=(y-28)+'px';EL.stage.appendChild(p);for(let i=0;i<12;i++){const s=el('div','spark');s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',((Math.random()*2-1)*140|0)+'px');s.style.setProperty('--dy',(-60-Math.random()*120|0)+'px');EL.stage.appendChild(s);setTimeout(()=>s.remove(),800)}setTimeout(()=>p.remove(),620)}
-
-/* ---------- Canvas FX base ---------- */
-let ctx=null, W=0, H=0, DPR=1, FPS=60;
-const R=()=>Math.random(), TAU=Math.PI*2;
-function lerp(a,b,t){return a+(b-a)*t}
-function easeOutCubic(t){return 1-Math.pow(1-t,3)}
-function easeInOut(t){return t<.5? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2}
-function resizeFX(){DPR=Math.min(2, (window.devicePixelRatio||1)); W=innerWidth; H=innerHeight; EL.fx.width=W*DPR; EL.fx.height=H*DPR; if(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.scale(DPR,DPR); }}
-function startFX(){EL.fx.style.display='block'; EL.fxBadge.style.display='block'; if(!ctx) ctx=EL.fx.getContext('2d'); if(!ctx){ EL.fx.style.display='none'; EL.fxBadge.style.display='none'; return false; } resizeFX(); ctx.clearRect(0,0,W,H); return true}
-function endFX(){if(!ctx) return; ctx.clearRect(0,0,W,H); EL.fx.style.display='none'; EL.fxBadge.style.display='none'; EL.banner.style.display='none'}
-window.addEventListener('resize', resizeFX); window.addEventListener('orientationchange', ()=>setTimeout(resizeFX, 150));
-function glow(x,y,r,a0=0.9,col='255,200,120'){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${col},${a0})`);g.addColorStop(1,`rgba(${col},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill()}
-
-/* ---------- FPS monitor ---------- */
-(function fpsLoop(){
-  let last=performance.now(), frames=0, acc=0;
-  function step(now){
-    const dt=now-last; last=now; acc+=dt; frames++;
-    if(acc>=500){ FPS=Math.round(frames*1000/acc); frames=0; acc=0; }
-    requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-})();
-
-/* ---------- PhoenixRebirth (JS port of your TS) ---------- */
-class PhoenixRebirth{
-  constructor({lod='standard', maskTex=null}={}){
-    this.lod=lod; this.maskTex=maskTex;
-    this.particleScale=1; this.running=false; this.start=0;
-    this.opts={bloom:0, vignette:0, gradeWarm:0, heat:0, rimlight:false, dof:false, shakeMag:0};
-    this.flags={sigil:false, phoenix:false, crown:false, embers:false, loopSecond:false, wingspanPlus:false};
-  }
-  async preload(){/* placeholder: would fetch GLB/audio */}
-  attachTo(scene, postChain, ui){/* not needed here; canvas is our scene */}
-  reduceParticles(scale){ this.particleScale=Math.max(0.3, Math.min(1, scale)); }
-  switchLOD(lod){ this.lod=lod; }
-
-  play({onPeak}={}){
-    if(!startFX()) return;
-    this.running=true; this.start=performance.now();
-    const cfg=this.config = JSON.parse($('#phoenix-config').textContent);
-    this.duration = cfg.duration*1000; // ms
-    this.beats = cfg.beats.map(b=>({t:b.t*1000,actions:b.actions}));
-    this.comboSpec = cfg.combo;
-    // schedule one-shot actions
-    this.nextBeat=0;
-    // adaptive
-    if(FPS<45) this.reduceParticles(0.6);
-    // render loop
-    const loop = (now)=>{
-      if(!this.running) return;
-      const t=now-this.start;
-      // fire beats
-      while(this.nextBeat<this.beats.length && t>=this.beats[this.nextBeat].t){
-        this.applyActions(this.beats[this.nextBeat].actions);
-        this.nextBeat++;
-        if(onPeak && this.nextBeat===3) onPeak(); // around enter_from_bg
-      }
-      this.draw(t/this.duration);
-      if(t<this.duration || this.flags.loopSecond){ requestAnimationFrame(loop); }
-      else { this.end(); }
-    };
-    requestAnimationFrame(loop);
-  }
-
-  applyActions(actions){
-    actions.forEach(a=>{
-      if(a.startsWith('grade:')){ const k=a.split(':')[1]; if(k==='warm_in') this.tween('gradeWarm',1,600); if(k==='neutral_out') this.tween('gradeWarm',0,600); }
-      else if(a.startsWith('vignette:')){ const v=parseFloat(a.split(':')[1]); this.opts.vignette=v; }
-      else if(a.startsWith('bloom:')){ const v=parseFloat(a.split(':')[1]); this.opts.bloom=v; }
-      else if(a==='sfx:rumble_in'||a==='sfx:impact'||a==='sfx:whoosh_in'||a==='sfx:choir_hit'){ /* hook in WebAudio later */ }
-      else if(a==='rimlight:on'){ this.opts.rimlight=true; }
-      else if(a==='ignite_sigil'){ this.flags.sigil=true; setTimeout(()=>this.flags.sigil=false, 1400); this.sparkBurst(80); }
-      else if(a==='particles:sparks_burst'){ this.sparkBurst(60); }
-      else if(a==='heat:on'){ this.tween('heat',0.6,500); }
-      else if(a==='phoenix:enter_from_bg'){ this.flags.phoenix=true; this.phoenixT0=performance.now(); }
-      else if(a==='dof:focus_near'){ this.opts.dof=true; setTimeout(()=>this.opts.dof=false,1400) }
-      else if(a.startsWith('shake:')){ const [mag,win]=a.split(':')[1].split('@'); this.shake(parseFloat(mag), parseInt(win)); }
-      else if(a==='phoenix:crown_form'){ this.flags.crown=true; setTimeout(()=>this.flags.crown=false,1600) }
-      else if(a==='banner:show'){ EL.banner.textContent='REBIRTH'; EL.banner.style.display='block'; }
-      else if(a==='banner:hold'){ /* leave visible until end */ }
-      else if(a==='embers:tail'){ this.flags.embers=true; setTimeout(()=>this.flags.embers=false,1800) }
-      else if(a==='heat:fade_out'){ this.tween('heat',0,800); }
-      else if(a==='end'){ this.end(); }
+/* ----------------------- render catalog ----------------------- */
+function renderCategory(cat){
+  const wrap = document.createElement('div');
+  wrap.className='gift-grid';
+  CATALOG[cat].forEach(g=>{
+    const d=document.createElement('div');
+    d.className='gift';
+    d.dataset.id=g.id; d.dataset.price=g.price; d.dataset.cat=cat;
+    d.innerHTML=`<div class="emo">${g.emo}</div><div class="name">${g.name}</div><div class="price">${g.price}</div>`;
+    // select highlight
+    d.addEventListener('click', ()=>{
+      document.querySelectorAll('.gift').forEach(x=>x.classList.remove('selected'));
+      d.classList.add('selected');
+      STATE.selectedGift = g;
+      sendGift(g); // single tap sends once
     });
-  }
-
-  tween(key,target,dur){
-    const startVal=this.opts[key]; const t0=performance.now();
-    const tick=()=>{
-      const k=Math.min(1,(performance.now()-t0)/dur);
-      this.opts[key]=startVal+(target-startVal)*k;
-      if(k<1) requestAnimationFrame(tick);
-    }; tick();
-  }
-
-  shake(mag,ms){
-    const t0=performance.now(); const base=this.opts.shakeMag;
-    const tick=()=>{
-      const k=(performance.now()-t0)/ms;
-      if(k<1){ this.opts.shakeMag = mag*(1-k) + base*k; requestAnimationFrame(tick); }
-      else { this.opts.shakeMag=base; }
-    }; tick();
-  }
-
-  sparkBurst(n){
-    if(!this.sparks) this.sparks=[];
-    for(let i=0;i<n*this.particleScale;i++){
-      this.sparks.push({x:W/2,y:H*0.55,vx:(R()*2-1)*3,vy:-(R()*2+1.5),life:900,age:0});
-    }
-  }
-
-  draw(p){
-    ctx.clearRect(0,0,W,H);
-
-    /* grade / vignette */
-    if(this.opts.gradeWarm>0){
-      ctx.fillStyle=`rgba(255,160,80,${0.15*this.opts.gradeWarm})`;
-      ctx.fillRect(0,0,W,H);
-    }
-    if(this.opts.vignette>0){
-      const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.65);
-      g.addColorStop(0,'rgba(0,0,0,0)');
-      g.addColorStop(1,`rgba(0,0,0,${this.opts.vignette})`);
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    }
-
-    /* phoenix path (if active) */
-    if(this.flags.phoenix){
-      const t=(performance.now()-this.phoenixT0)/ (this.config.duration*1000); // normalized
-      const x=lerp(-W*.25, W*1.1, easeInOut(Math.min(1,t)));
-      const y=lerp(H*.75, H*.28, easeInOut(Math.min(1,t)));
-      // trail
-      const bloomScale = 1 + this.opts.bloom;
-      for(let i=0;i<50*this.particleScale;i++){
-        glow(x-R()*140, y+(R()*60-30), (R()*22+12)*bloomScale, (1-p)*(R()*0.4+0.35), '255,120,40');
-      }
-      // body glow
-      glow(x,y,50*bloomScale,0.95,'255,160,60');
-      // wingspan_plus combo
-      if(this.flags.wingspanPlus){ glow(x,y-30,40*bloomScale,0.8,'255,200,120'); glow(x,y+30,40*bloomScale,0.8,'255,200,120'); }
-      // crown (glyph)
-      if(this.flags.crown){
-        ctx.font='64px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';
-        ctx.textAlign='center'; ctx.fillText('👑', x, y-60);
-      }
-      // embers tail
-      if(this.flags.embers){
-        for(let i=0;i<24*this.particleScale;i++){
-          glow(x-(R()*80+20), y+(R()*20-10), R()*12+6, 0.35, '255,100,30');
-        }
-      }
-    }
-
-    /* sigil */
-    if(this.flags.sigil){
-      const r=120; ctx.globalCompositeOperation='lighter';
-      for(let i=0;i<3;i++){ glow(W/2,H*0.6,r+i*18,0.18,'255,200,120'); }
-      ctx.globalCompositeOperation='source-over';
-    }
-
-    /* sparks */
-    if(this.sparks && this.sparks.length){
-      ctx.globalCompositeOperation='lighter';
-      const dt=16;
-      this.sparks = this.sparks.filter(s=>{
-        s.age+=dt; s.x+=s.vx; s.y+=s.vy; s.vy+=0.06;
-        glow(s.x,s.y,3,1,'255,255,255');
-        return s.age < s.life;
-      });
-      ctx.globalCompositeOperation='source-over';
-    }
-
-    /* heat haze (simulated as warm overlay) */
-    if(this.opts.heat>0){
-      ctx.fillStyle=`rgba(255,120,40,${0.06*this.opts.heat})`;
-      ctx.fillRect(0,0,W,H);
-    }
-
-    /* rimlight pulse */
-    if(this.opts.rimlight){
-      glow(W/2,H*0.55,180,0.1,'255,220,180');
-    }
-
-    /* DOF focus (soft vignette) */
-    if(this.opts.dof){
-      const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.25,W/2,H/2,Math.max(W,H)*0.8);
-      g.addColorStop(0,'rgba(255,255,255,0)');
-      g.addColorStop(1,'rgba(0,0,0,0.12)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    }
-
-    /* shake */
-    if(this.opts.shakeMag>0){
-      const mag=this.opts.shakeMag*6;
-      EL.fx.style.transform=`translate(${(R()*mag-mag/2)|0}px, ${(R()*mag-mag/2)|0}px)`;
-      setTimeout(()=>{ EL.fx.style.transform=''; }, 0);
-    }
-  }
-
-  end(){
-    this.running=false; endFX();
-  }
-}
-
-/* ---------- Combo window tracker for Phoenix ---------- */
-const phoenixCombos=[];
-function recordPhoenixSend(){
-  const now=performance.now();
-  const cfg=JSON.parse($('#phoenix-config').textContent);
-  const windowMs=cfg.combo.window*1000;
-  // purge old
-  while(phoenixCombos.length && now-phoenixCombos[0]>windowMs) phoenixCombos.shift();
-  phoenixCombos.push(now);
-  return phoenixCombos.length;
-}
-
-/* ---------- Other billionaire FX (unchanged from v9 long versions) ---------- */
-function unicornFX(){ if(!startFX()) return fallback('🦄'); const t0=performance.now(), D=5500; ctx.font='64px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeInOut(t);ctx.clearRect(0,0,W,H);const x=lerp(-100,W+100,p), y=lerp(H*.65,H*.35,p);const g=ctx.createLinearGradient(x-260,y-60,x,y+60);['red','orange','yellow','lime','deepskyblue','indigo','violet'].forEach((c,i)=>g.addColorStop(i/6,c));ctx.globalAlpha=.9*(1-t);ctx.fillStyle=g;ctx.fillRect(x-260,y-28,240,56);ctx.globalAlpha=1;ctx.globalCompositeOperation='lighter';for(let i=0;i<54;i++){const sx=x-R()*220, sy=y+(R()*60-30);ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.arc(sx,sy,R()*2+1.2,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';ctx.fillText('🦄', x-24, y+18);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
-function jetFX(){ if(!startFX()) return fallback('✈️'); const t0=performance.now(), D=6000; ctx.font='60px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeInOut(t);ctx.clearRect(0,0,W,H);const x=lerp(-180,W+180,p), y=lerp(H*.55,H*.35,p);ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,255,255,.7)';ctx.fillRect(x-260,y-6,240,12);if(t>.25&&t<.65){const k=(t-.25)/.4, r=lerp(22,180,k);ctx.strokeStyle=`rgba(255,255,255,${1-k})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x-60,y,r,0,TAU);ctx.stroke()}ctx.globalCompositeOperation='source-over';ctx.fillText('🛩️', x-20, y+18);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
-function castleFX(){ if(!startFX()) return fallback('🏰'); const t0=performance.now(), D=6000; ctx.font='70px system-ui, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji';(function f(now){const t=Math.min(1,(now-t0)/D), p=easeOutCubic(t), x=W/2, y=lerp(H*.82,H*.45,p);ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++) glow(x,y+14,150+i*26,0.12*(1-t),'180,220,255');for(let i=0;i<70;i++){const ang=R()*TAU, rr=R()*160; glow(x+Math.cos(ang)*rr, y+Math.sin(ang)*rr,3,0.9,'255,255,255')}ctx.globalCompositeOperation='source-over';ctx.textAlign='center';ctx.fillText('🏰', x, y);if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
-function chestFX(){ if(!startFX()) return fallback('💰'); const t0=performance.now(), D=5500; const coins=Array.from({length:120},()=>({x:W/2+(R()*180-90),y:H*.62,vx:(R()*2-1)*2.2,vy:-(R()*4+3.5),r:R()*3+2.2,a:1}));(function f(now){const t=Math.min(1,(now-t0)/D);ctx.clearRect(0,0,W,H);ctx.fillStyle='#6d4c41';ctx.fillRect(W/2-80,H*.62,160,60);ctx.fillStyle='#8d6e63';ctx.fillRect(W/2-80,H*.62-26,160,26);ctx.globalCompositeOperation='lighter';for(const c of coins){c.x+=c.vx;c.y+=c.vy;c.vy+=.12;c.a*=.993;const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r*2.4);g.addColorStop(0,`rgba(255,240,180,${c.a})`);g.addColorStop(1,`rgba(255,215,80,0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
-function rolexFX(){ if(!startFX()) return fallback('💎'); const t0=performance.now(), D=5000, x=W/2, y=H/2, R0=28, R1=160;(function f(now){const t=Math.min(1,(now-t0)/D);ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';for(let i=0;i<40;i++){const ang=i*(TAU/40)+now*0.006, r=lerp(R0,R1,t), px=x+Math.cos(ang)*r, py=y+Math.sin(ang)*r;ctx.fillStyle=`hsla(${(i*12)%360},100%,70%,${1-t})`;ctx.beginPath();ctx.arc(px,py,3,0,TAU);ctx.fill()}ctx.globalCompositeOperation='source-over';glow(x,y,12,1,'255,255,255');if(t<1) requestAnimationFrame(f); else endFX();})(t0) }
-
-/* ---------- Dispatch with phoenixRebirth ---------- */
-const dispatch={
-  // billionaire
-  phoenixRebirth:()=>{ // combo-aware
-    const count=recordPhoenixSend();
-    const effect=new PhoenixRebirth({ lod: (FPS<45?'lite':'standard') });
-    effect.preload().then(()=>{
-      effect.attachTo(null,null,null);
-      // apply combo tiers
-      if(count>=3) effect.flags.loopSecond=true;
-      if(count>=2) effect.flags.wingspanPlus=true;
-      effect.play({ onPeak: ()=>{/* flash UI etc */} });
+    // long press for combo
+    let pressT;
+    d.addEventListener('pointerdown', ()=>{
+      pressT=setTimeout(()=>{ // start auto send after 350ms hold
+        STATE.holdTimer=setInterval(()=> sendGift(g,true), 280);
+      }, 350);
     });
-  },
-  unicornFX, castleFX, chestFX, jetFX, rolexFX,
-
-  // simple fallbacks for non-billionaire
-  party:()=>fallback('🥳'), lick:()=>fallback('😋'), butterfly:()=>fallback('🦋'),
-  car:()=>fallback('🏎️'), rose:()=>fallback('🌹'), champagne:()=>fallback('🍾'),
-  clink:()=>fallback('🥂'), clap:()=>fallback('👏'), kiss:()=>fallback('💋'),
-  coins:()=>fallback('🪙'), storm:()=>fallback('🌩'), rainbow:()=>fallback('🌈'),
-  snow:()=>fallback('❄️'), sun:()=>fallback('🌤'), crown:()=>fallback('👑'),
-  planeSimple:()=>fallback('✈️'), yacht:()=>fallback('🛥️'), sparkle:()=>fallback('✨')
-};
-function runAnim(key,emoji){ (dispatch[key]||(()=>fallback(emoji)))() }
-
-/* ---------- Navigation / gifting / wallet ---------- */
-function show(id){Object.values(EL.screens).forEach(s=>s.classList.remove('active')); EL.screens[id].classList.add('active')}
-function mountNav(){
-  const nav=el('nav','nav'); nav.innerHTML=`<a class="item" data-go="home"><div>🏠</div><div>Home</div></a>
-  <a class="item" data-go="gifts"><div>🎁</div><div>Gifts</div></a>
-  <button class="honeypot" title="Go Live"></button>
-  <a class="item" data-go="wallet"><div>💰</div><div>Wallet</div></a>
-  <a class="item" data-go="profile"><div>👤</div><div>Profile</div></a>`;
-  document.body.appendChild(nav);
-  nav.addEventListener('click',e=>{const a=e.target.closest('[data-go]'); if(!a) return; show(a.getAttribute('data-go'))});
-  nav.querySelector('.honeypot').addEventListener('click',()=>showToast('Go Live (demo) — honeypot button!'));
-}
-function showCombo(n){const c=el('div','combo'); c.textContent='Combo x'+n; document.body.appendChild(c); setTimeout(()=>c.remove(),600)}
-function sendOne(giftEl){
-  const price=+giftEl.dataset.price; const emoji=giftEl.querySelector('.emo').textContent; const anim=giftEl.dataset.anim||'';
-  if(!spend(price)){showToast('Not enough BuzzCoins — open Wallet to top up'); return false}
-  runAnim(anim, emoji); return true;
-}
-function bindGifting(){
-  let combo=0, hold=null, pressing=false, highlighted=null;
-  function select(el){ if(highlighted) highlighted.classList.remove('highlight'); highlighted=el; el.classList.add('highlight'); setTimeout(()=>{ if(highlighted===el) el.classList.remove('highlight')},1600)}
-  function startHold(el){ pressing=true; combo=0; if(sendOne(el)){ combo=1; showCombo(combo)} hold=setInterval(()=>{ if(sendOne(el)){ combo++; if(combo%2===0) showCombo(combo)} else stopHold()},250)} // slowed a bit to enjoy FX
-  function stopHold(){ pressing=false; clearInterval(hold); hold=null }
-  document.addEventListener('pointerdown',e=>{const el=e.target.closest('.gift'); if(!el) return; select(el); S.holdTimer=setTimeout(()=>startHold(el),220)})
-  document.addEventListener('pointerup',e=>{clearTimeout(S.holdTimer); const el=e.target.closest('.gift'); if(!el) return; if(!pressing) sendOne(el); stopHold()})
-  document.addEventListener('pointerleave',()=>{clearTimeout(S.holdTimer); stopHold()})
-}
-function bindWallet(){
-  if(EL.btnTopup) EL.btnTopup.addEventListener('click',()=>{S.regular+=100; save(); updateUI(); showToast('+100 BuzzCoins')});
-  if(EL.btnReset) EL.btnReset.addEventListener('click',()=>{localStorage.removeItem('buzz_demo_v10'); S.regular=300; S.ad=0; S.spent=0; S.adsToday=0; S.lastAdDate=null; save(); updateUI(); showToast('Demo reset')});
-  if(EL.btnWatchAd){
-    let cool=false;
-    EL.btnWatchAd.addEventListener('click',()=>{
-      const today=new Date().toISOString().slice(0,10);
-      if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today}
-      if(S.adsToday>=5) return showToast('Daily ad limit reached');
-      if(cool) return showToast('Please wait 5s…');
-      S.ad+=1; S.adsToday+=1; save(); updateUI(); showToast('+1 from Ad');
-      cool=true; EL.btnWatchAd.disabled=true; setTimeout(()=>{cool=false; EL.btnWatchAd.disabled=false},5000);
-    });
-  }
-  // balance gestures
-  let taps=0, tapTimer=null, pressTimer=null;
-  EL.balance.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>{ S.regular+=500; save(); updateUI(); showToast('+500 (long-press)') }, 600); });
-  EL.balance.addEventListener('pointerup',()=>{
-    clearTimeout(pressTimer); taps++; clearTimeout(tapTimer);
-    tapTimer=setTimeout(()=>{ if(taps>=3){ S.regular+=100; save(); updateUI(); showToast('+100 (triple-tap)') } taps=0; }, 320);
+    const stopHold=()=>{ clearTimeout(pressT); if(STATE.holdTimer){clearInterval(STATE.holdTimer); STATE.holdTimer=null;} };
+    d.addEventListener('pointerup',stopHold); d.addEventListener('pointerleave',stopHold); d.addEventListener('pointercancel',stopHold);
+    wrap.appendChild(d);
   });
+  EL.giftWrap.innerHTML='';
+  EL.giftWrap.appendChild(wrap);
 }
-function bindTestHelpers(){
-  EL.btnPreviewBillion.addEventListener('click',()=>{
-    const seq=['phoenixRebirth','unicornFX','castleFX','chestFX','jetFX','rolexFX'];
-    seq.forEach((k,i)=>setTimeout(()=>runAnim(k,''), i*7000)); // give each ~7s window
-    showToast('Previewing Billionaire FX (incl. Phoenix timeline)');
-  });
-  EL.btnGrant20k.addEventListener('click',()=>{ S.regular+=20000; save(); updateUI(); showToast('+20,000 BuzzCoins (dev)')});
-}
+renderCategory('common');
 
-/* ---------- Boot ---------- */
-document.addEventListener('DOMContentLoaded', ()=>{
-  try{ load(); updateUI(); mountGifts(); bindGifting(); bindWallet(); bindTestHelpers(); mountNav(); }
-  catch(e){ showErr('Init error: '+(e?.message||e)); }
+el('giftTabs').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  el('giftTabs').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  renderCategory(chip.dataset.cat);
 });
+
+/* ----------------------- ads (1 coin, max 5/day, 5s cooldown) ----------------------- */
+function todayKey(){ const d=new Date(); return `ad-${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function loadAdState(){
+  const k=todayKey(); const obj=JSON.parse(localStorage.getItem(k)||'{"count":0,"last":0}');
+  STATE.ad.count=obj.count||0; STATE.ad.last=obj.last||0;
+}
+function saveAdState(){
+  const k=todayKey(); localStorage.setItem(k, JSON.stringify({count:STATE.ad.count,last:STATE.ad.last}));
+}
+loadAdState();
+
+el('watchAd').addEventListener('click', ()=>{
+  const now=Date.now()/1000;
+  if(STATE.ad.count>=STATE.ad.max){ toast("Daily ad limit reached (5).", "bad"); return; }
+  if(now-STATE.ad.last<STATE.ad.cooldown){ toast(`Please wait ${Math.ceil(STATE.ad.cooldown-(now-STATE.ad.last))}s…`,"warn"); return; }
+  // simulate a 5s ad
+  toast("Playing ad… (+1)", "ok", 1200);
+  STATE.ad.last=now; STATE.ad.count++; saveAdState();
+  setTimeout(()=>{ STATE.balance+=1; updateBalance(); toast("1 BuzzCoin added!","ok"); }, 500);
+});
+
+el('devAdd').addEventListener('click', ()=>{ STATE.balance+=50; updateBalance(); toast("+50 test coins","ok"); });
+el('devAdd100').addEventListener('click', ()=>{ STATE.balance+=100; updateBalance(); toast("+100","ok"); });
+el('devReset').addEventListener('click', ()=>{ STATE.balance=0; updateBalance(); toast("Balance reset","warn"); });
+
+/* ----------------------- send gift ----------------------- */
+function spend(n){
+  if(STATE.balance<n){ toast("Not enough BuzzCoin","bad"); return false; }
+  STATE.balance-=n; updateBalance(); return true;
+}
+
+function sendGift(g, combo=false){
+  if(!spend(g.price)) return;
+  animateGift(g, combo);
+  log(`Sent ${g.name} (−${g.price}). Balance ${STATE.balance}.`);
+}
+
+/* ----------------------- FX primitives ----------------------- */
+function addFx(html, opts={}){
+  const n=document.createElement('div'); n.className='fx-item shadow';
+  n.innerHTML=html;
+  if(opts.style) Object.assign(n.style, opts.style);
+  EL.fx.appendChild(n);
+  const kill=()=>n.remove();
+  const ms = (opts.ms??5000);
+  setTimeout(kill, ms);
+  return n;
+}
+function lensTint(color='rgba(255,180,80,.25)', ms=800){
+  const n=document.createElement('div'); n.style.cssText=`position:absolute;inset:0;background:${color};mix-blend-mode:screen;opacity:.0`;
+  EL.fx.appendChild(n);
+  n.animate([{opacity:0},{opacity:1},{opacity:0}], {duration:ms, easing:'ease-in-out'}).onfinish=()=>n.remove();
+}
+function confetti(ms=1200){
+  for(let i=0;i<30;i++){
+    const s=document.createElement('div'); s.style.cssText=`position:absolute;left:${Math.random()*100}%;top:-10vh;width:6px;height:10px;background:hsl(${Math.random()*360} 90% 60%);animation:confettiFall ${ms}ms linear forwards;`;
+    EL.fx.appendChild(s); setTimeout(()=>s.remove(), ms+200);
+  }
+}
+
+/* ----------------------- Alive behaviors ----------------------- */
+function animateGift(g, combo){
+  const heavy = g.price>=1000;
+  const dur = heavy ? 8000 : g.price>=500 ? 6000 : 5000;
+
+  switch(g.id){
+    /* === Common examples === */
+    case 'party': {
+      confetti(1600);
+      const face = addFx(`<div style="font-size:72px">🥳</div>`, {ms:1600});
+      // party blower tongue roll
+      face.animate([
+        {transform:'translate(-50%,-50%) scale(1)'},
+        {transform:'translate(-50%,-48%) scale(1.15)'},
+        {transform:'translate(-50%,-50%) scale(1)'}],
+        {duration:1400, easing:'ease-in-out'});
+      break;
+    }
+    case 'yum': {
+      const n=addFx(`<div style="font-size:84px">😋</div>`, {ms:1500});
+      n.animate([{transform:'translate(-50%,-50%)'},{transform:'translate(-50%,-53%)'},{transform:'translate(-50%,-50%)'}],
+                {duration:1200,easing:'ease-in-out'});
+      break;
+    }
+
+    /* === Rare === */
+    case 'butterfly': {
+      const n=addFx(`<div style="font-size:70px">🦋</div>`, {ms:dur});
+      n.style.animation='flutter 5200ms ease-in-out forwards';
+      const shimmer=addFx(`<div style="width:220px;height:220px;border-radius:50%;box-shadow:0 0 60px 10px rgba(147,197,253,.35) inset"></div>`, {ms:1200,style:{opacity:.6}});
+      shimmer.animate([{opacity:.0, transform:'translate(-50%,-50%) scale(.6)'},{opacity:.6,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.2)'}],
+                      {duration:1200});
+      break;
+    }
+    case 'goldHummer': {
+      const car=addFx(`<div style="font-size:72px;filter:drop-shadow(0 14px 20px rgba(0,0,0,.5))">🚙</div>`, {ms:dur, style:{bottom:'12%', left:'-10%'}});
+      car.style.top='auto'; car.style.transform='translate(0,0)';
+      car.animate([{transform:'translate(-10vw,0) rotate(-8deg)'},{transform:'translate(40vw,-2vh) rotate(2deg)'},{transform:'translate(110vw,1.5vh) rotate(3deg)'}],
+                  {duration:5200, easing:'cubic-bezier(.25,.8,.2,1)'});
+      // tire smoke puffs
+      for(let i=0;i<12;i++){
+        const puff=addFx(`<div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff8,transparent 60%)"></div>`,{ms:1600,style:{left: '35%', bottom:'12%'}});
+        puff.style.top='auto';
+        puff.animate([{transform:'translate(0,0) scale(.6)',opacity:.7},{transform:'translate(20px,-40px) scale(1.4)',opacity:0}],
+                     {duration:1200,delay:i*120});
+      }
+      break;
+    }
+
+    /* === Billionaire highlights === */
+    case 'phoenix': {
+      // mini interpreter for your JSON
+      const script = {
+        id:"gift.phoenix_rebirth", duration:8000,
+        beats:[
+          {t:0,   actions:['grade:warm_in','bloom:0.4']},
+          {t:600, actions:['ignite_sigil','sparks']},
+          {t:2200,actions:['phoenix_enter']},
+          {t:4200,actions:['phoenix_crown','banner']},
+          {t:6000,actions:['embers_tail','grade:neutral']},
+        ]
+      };
+      runPhoenix(script);
+      break;
+    }
+    case 'unicorn': {
+      lensTint('rgba(255,255,255,.18)', 1600);
+      const n=addFx(`<div style="font-size:100px">🦄</div>`, {ms:dur});
+      n.animate([{transform:'translate(-60vw,30vh) scale(1.2) rotate(-12deg)'},
+                 {transform:'translate(0,0) scale(1) rotate(0deg)'},
+                 {transform:'translate(60vw,-20vh) scale(1.1) rotate(6deg)'}],
+                {duration:6200, easing:'ease-in-out'});
+      // stardust trail
+      for(let i=0;i<40;i++){
+        const s=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.9)"></div>`, {ms:2000});
+        s.animate([{transform:`translate(${-300+Math.random()*100}px, ${120-Math.random()*40}px)`, opacity:.0},
+                   {transform:'translate(0,0)', opacity:1},
+                   {transform:`translate(${200+Math.random()*120}px, ${-120+Math.random()*40}px)`, opacity:0}],
+                  {duration:1800, delay:i*40});
+      }
+      break;
+    }
+    default:{
+      // generic pop & sparkle
+      const n=addFx(`<div style="font-size:${heavy?96:g.price>=500?84:64}px">${g.emo}</div>`, {ms:dur});
+      n.animate([{transform:'translate(-50%,-40%) scale(.9)'},{transform:'translate(-50%,-50%) scale(1.2)'},{transform:'translate(-50%,-55%) scale(1)'}],
+                {duration:1400,easing:'ease-in-out'});
+      for(let i=0;i<10;i++){
+        const star=addFx(`<div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>`, {ms:1200});
+        star.animate([{transform:`translate(${(Math.random()*2-1)*80}px, ${(Math.random()*2-1)*60}px)`, opacity:1},
+                      {transform:`translate(${(Math.random()*2-1)*140}px, ${(Math.random()*2-1)*120}px)`, opacity:0}],
+                     {duration:1000, delay:i*60});
+      }
+    }
+  }
+}
+
+/* ---- Phoenix JSON runner (lightweight mapping to DOM actions) ---- */
+function runPhoenix(cfg){
+  const start=performance.now();
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:absolute;inset:0;background:transparent';
+  EL.fx.appendChild(overlay);
+
+  const timers=[];
+  function act(a){
+    if(a.startsWith('grade:warm_in')) overlay.animate([{background:'transparent'},{background:'radial-gradient(120% 120% at 50% 50%, rgba(255,120,40,.20), transparent 60%)'}],{duration:900,fill:'forwards'});
+    if(a.startsWith('bloom')) lensTint('rgba(255,180,80,.22)',900);
+    if(a==='ignite_sigil'){
+      const s=addFx(`<div style="width:160px;height:160px;border:3px solid rgba(255,120,0,.8);border-radius:50%"></div>`,{ms:1600});
+      s.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:.2},{transform:'translate(-50%,-50%) scale(1.2)',opacity:1},{opacity:0}],{duration:1400});
+    }
+    if(a==='sparks'){
+      for(let i=0;i<40;i++){
+        const p=addFx(`<div style="width:4px;height:4px;border-radius:50%;background:rgba(255,200,120,.95)"></div>`,{ms:1200});
+        p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${(Math.random()*2-1)*140}px, ${(Math.random()*-1)*160}px)`,opacity:0}],{duration:1200});
+      }
+    }
+    if(a==='phoenix_enter'){
+      const fx=addFx(`<div style="font-size:110px">🔥</div>`,{ms:3000});
+      fx.animate([{transform:'translate(-50%,40vh) scale(.8)'},{transform:'translate(-50%,-10vh) scale(1.2)'},{transform:'translate(-50%,-50%) scale(1)'}],
+                 {duration:2400, easing:'ease-out'});
+    }
+    if(a==='phoenix_crown'){
+      const ring=addFx(`<div style="width:220px;height:220px;border-radius:50%;box-shadow:0 0 120px 40px rgba(255,190,120,.45) inset"></div>`,{ms:1400});
+      ring.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:.2},{transform:'translate(-50%,-50%) scale(1.1)',opacity:.9},{opacity:0}],{duration:1200});
+    }
+    if(a==='banner'){
+      const b=addFx(`<div style="padding:10px 16px;border-radius:12px;background:linear-gradient(90deg,#ff9f1a,#ffd166);color:#000;font-weight:800">Phoenix Rebirth!</div>`,{ms:1800,style:{top:'12%',left:'50%'}});
+      b.animate([{transform:'translate(-50%,-120%)',opacity:0},{transform:'translate(-50%,0)',opacity:1},{transform:'translate(-50%,-120%)',opacity:0}],{duration:1800});
+    }
+    if(a==='embers_tail'){
+      for(let i=0;i<30;i++){
+        const e=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,120,0,.9)"></div>`,{ms:1600});
+        e.animate([{transform:`translate(${Math.random()*80-40}px, ${Math.random()*20-10}px)`,opacity:1},{transform:`translate(${Math.random()*120-60}px, ${80+Math.random()*60}px)`,opacity:0}],{duration:1500, delay:i*30});
+      }
+    }
+    if(a==='grade:neutral') overlay.animate([{background:overlay.style.background||'transparent'},{background:'transparent'}],{duration:800});
+  }
+
+  cfg.beats.forEach(b=>{
+    timers.push(setTimeout(()=>{ b.actions.forEach(act); }, b.t));
+  });
+  timers.push(setTimeout(()=>overlay.remove(), cfg.duration||8000));
+}
+
+/* ----------------------- mock live button ----------------------- */
+el('goLive').addEventListener('click', ()=> toast("Mock: Start Live not wired in demo", "warn"));
+
+/* ----------------------- global error banner ----------------------- */
+window.addEventListener('error', e=>{
+  toast("JS error: "+(e.message||'Unknown'), 'bad', 2600);
+});
+
+/* default nav */
+show('scrHome');
 </script>
 </body>
 </html>
