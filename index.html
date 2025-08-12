@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BuzzPi — Demo (Alive Gifts • Safe Build)</title>
+<title>BuzzPi — Demo (Billionaire FX)</title>
 <meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <style>
@@ -20,105 +20,98 @@
   .chip{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:var(--card);font-weight:600;color:var(--muted)}
   .chip.active{background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff}
   .screen{display:none;padding:12px 16px}.screen.active{display:block}
+
   .card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--ring);margin-bottom:14px}
-  .coins{font-size:28px;font-weight:800}.muted{color:var(--muted);font-size:13px}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
+  .coins{font-size:28px;font-weight:800}
+  .muted{color:var(--muted);font-size:13px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;min-height:44px}
   .btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#212121}
-  .rowBtns{display:flex;gap:10px;flex-wrap:wrap}.small{font-size:12px}
-  .bar{height:10px;background:#1f2330;border-radius:999px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5b35f6,#7b5df9)}
-  .gsec{margin:18px 0}.gtitle{display:flex;align-items:center;gap:10px;margin:6px 0 10px}.gtitle span{font-weight:800}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media (max-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .btn.secondary{background:linear-gradient(135deg,#222,#333)}
+  .btn.small{font-size:12px;padding:10px 12px}
+  .rowBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rowBtns.onecol{grid-template-columns:1fr}
+  .small{font-size:12px}
+  .bar{height:10px;background:#1f2330;border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5b35f6,#7b5df9)}
+
+  .gsec{margin:18px 0}
+  .gtitle{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+  .gtitle span{font-weight:800}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
   .gift{background:var(--card);border-radius:14px;padding:10px;text-align:center;cursor:pointer;user-select:none;position:relative;box-shadow:var(--ring);transition:.2s}
-  .gift .emo{font-size:26px;line-height:1}.gift .name{font-size:11px;color:var(--muted);margin-top:4px}.gift .price{font-size:12px;font-weight:800;margin-top:4px}
-  .gift:active{transform:scale(.98)} .gift[data-tier="billionaire"]{outline:2px solid rgba(247,201,72,.25)} .gift[data-tier="rare"]{outline:2px solid rgba(91,53,246,.25)}
+  .gift .emo{font-size:26px;line-height:1}
+  .gift .name{font-size:11px;color:var(--muted);margin-top:4px}
+  .gift .price{font-size:12px;font-weight:800;margin-top:4px}
+  .gift:active{transform:scale(.98)}
+  .gift[data-tier="billionaire"]{outline:2px solid rgba(247,201,72,.25)}
+  .gift[data-tier="rare"]{outline:2px solid rgba(91,53,246,.25)}
+
+  /* selection heartbeat */
   .gift.highlight::after{content:"";position:absolute;inset:-2px;border-radius:16px;box-shadow:0 0 0 0 rgba(123,93,249,.5);animation:heartbeat 1200ms ease-in-out infinite}
   @keyframes heartbeat{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,.45)}25%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.15)}50%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}75%{transform:scale(1.02);box-shadow:0 0 0 8px rgba(123,93,249,.12)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(123,93,249,0)}}
-  .stage{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+  /* stage + combo */
+  .stage{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:20}
   .combo{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-weight:900;font-size:28px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;padding:6px 12px;border-radius:12px;box-shadow:var(--ring);opacity:0;animation:combo .3s ease forwards}
   @keyframes combo{to{opacity:1;transform:translateX(-50%) scale(1.05)}}
+
+  /* generic particles for non-billionaire fallbacks */
   .pop{position:absolute;font-size:64px;animation:pop .6s ease-out forwards}
   @keyframes pop{0%{transform:scale(.5);opacity:.0}40%{transform:scale(1.1);opacity:1}100%{transform:scale(1) translateY(-120px);opacity:0}}
   .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff,#ffd);animation:spark 800ms ease-out forwards}
   @keyframes spark{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}
-  /* (Alive anim CSS trimmed for brevity; same as previous build) */
-  /* Butterfly */
+
+  /* Rare + Common alive anims (kept lightweight) */
   .bfly{position:absolute;width:64px;height:64px;transform-origin:center;animation:bfFloat 1s ease-in-out forwards}
   .bf-body{position:absolute;left:30px;top:20px;width:6px;height:24px;background:#3b2a22;border-radius:6px}
   .wing{position:absolute;width:28px;height:28px;border-radius:50% 45% 50% 45%;background:radial-gradient(circle at 30% 30%,#ffb6c1,#ff69b4);opacity:.95;transform-origin:28px 14px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
   .wing.left{left:10px;top:12px;transform:rotateZ(12deg);animation:flap .25s ease-in-out infinite alternate}
   .wing.right{left:28px;top:12px;transform:scaleX(-1) rotateZ(12deg);animation:flap .25s ease-in-out infinite alternate}
-  @keyframes flap{from{transform:rotateZ(6deg)}to{transform:rotateZ(26deg)}}@keyframes bfFloat{0%{transform:translate(-20px,40px) rotate(-8deg);opacity:0}20%{opacity:1}50%{transform:translate(0px,-10px) rotate(5deg)}100%{transform:translate(120px,-60px) rotate(12deg);opacity:0}}
-  /* Car */
+  @keyframes flap{from{transform:rotateZ(6deg)}to{transform:rotateZ(26deg)}}
+  @keyframes bfFloat{0%{transform:translate(-20px,40px) rotate(-8deg);opacity:0}20%{opacity:1}50%{transform:translate(0px,-10px) rotate(5deg)}100%{transform:translate(120px,-60px) rotate(12deg);opacity:0}}
+
+  /* Cars etc (unchanged) */
   .car{position:absolute;width:120px;height:52px;transform-origin:center;animation:carEnter .45s ease-out forwards,carExit .6s ease-in forwards .6s}
   .car-body{position:absolute;left:10px;right:10px;top:10px;bottom:10px;border-radius:12px;background:linear-gradient(135deg,#18a558,#0b7a44);box-shadow:0 6px 12px rgba(0,0,0,.3)}
-  .car-body.hummer{background:linear-gradient(135deg,#c8a045,#a67c22)}.wheel{position:absolute;bottom:2px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#000,#222);border:3px solid #444;animation:spin .5s linear infinite}
+  .wheel{position:absolute;bottom:2px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#000,#222);border:3px solid #444;animation:spin .5s linear infinite}
   .wheel::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;transform:translate(-50%,-50%);background:#888;border-radius:50%}
-  .wheel.l{left:14px}.wheel.r{right:14px}@keyframes carEnter{from{transform:translateX(-160px) rotate(-12deg)}to{transform:translateX(0) rotate(-2deg)}}@keyframes carExit{to{transform:translateX(240px) rotate(3deg);opacity:0}}@keyframes spin{to{transform:rotate(360deg)}}
+  .wheel.l{left:14px}.wheel.r{right:14px}
+  @keyframes carEnter{from{transform:translateX(-160px) rotate(-12deg)}to{transform:translateX(0) rotate(-2deg)}}
+  @keyframes carExit{to{transform:translateX(240px) rotate(3deg);opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .smoke{position:absolute;bottom:8px;left:2px;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff,#bbb0);filter:blur(1px);animation:puff .6s ease-out forwards}
   @keyframes puff{to{transform:translate(-24px,-10px) scale(1.8);opacity:0}}
-  /* Party, Lick, etc. (unchanged) */
-  .party{position:absolute;width:120px;height:120px;animation:partyUp 1s ease-out forwards}@keyframes partyUp{from{transform:translateY(40px);opacity:0}20%{opacity:1}to{transform:translateY(-40px);opacity:0}}
-  .horn{position:absolute;left:46px;top:52px;width:28px;height:10px;background:linear-gradient(90deg,#fdd835,#f06292);border-radius:10px;transform-origin:left center;animation:hornUnroll .7s ease-out forwards}
-  @keyframes hornUnroll{from{transform:scaleX(.2) rotate(-10deg)}to{transform:scaleX(1.2) rotate(8deg)}}
-  .conf{position:absolute;width:6px;height:10px;border-radius:2px;animation:confDrop 900ms ease-out forwards}
-  @keyframes confDrop{from{transform:translateY(-10px) rotate(0)}to{transform:translateY(80px) rotate(240deg);opacity:0}}
-  .lick{position:absolute;width:120px;height:120px}.mouth{position:absolute;left:42px;top:54px;width:36px;height:22px;background:#111;border-radius:0 0 18px 18px;overflow:hidden}
-  .tongue{position:absolute;left:-10px;top:6px;width:30px;height:14px;background:#e26d77;border-radius:14px;animation:lick 800ms ease-out forwards}
-  @keyframes lick{0%{transform:translateX(0)}40%{transform:translateX(42px)}70%{transform:translateX(42px)}100%{transform:translateX(0)}}
-  .rose{display:none} /* (petals are separate elements) */
+
   .petal{position:absolute;width:10px;height:14px;background:radial-gradient(circle at 30% 30%,#ff8aa1,#e6406f);border-radius:10px 10px 2px 10px;transform:rotate(20deg);opacity:.95;animation:fall 900ms ease-in forwards}
   @keyframes fall{from{transform:translateY(-20px) rotate(20deg)}to{transform:translateY(120px) rotate(60deg);opacity:0}}
+
   .bubble{position:absolute;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#fff,#fff0);border:1px solid #fff8;animation:rise 900ms ease-out forwards}
   @keyframes rise{from{transform:translateY(0) scale(.6);opacity:.8}to{transform:translateY(-120px) scale(1.1);opacity:0}}
+
   .clink{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid #fff8;animation:clinkPop 500ms ease-out forwards}
   @keyframes clinkPop{from{transform:scale(.4);opacity:.8}to{transform:scale(1.6);opacity:0}}
+
   .shock{position:absolute;width:2px;height:14px;background:#fff8;animation:shockOut 400ms ease-out forwards}
   @keyframes shockOut{from{transform:scaleY(.4);opacity:.9}to{transform:scaleY(1.4) translateY(-14px);opacity:0}}
+
   .kiss{position:absolute;font-size:42px;animation:kissUp 800ms ease-out forwards}
   @keyframes kissUp{from{transform:translateY(20px);opacity:.2}to{transform:translateY(-80px);opacity:0}}
+
   .coin{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,#ffd54f,#fbc02d);box-shadow:0 1px 2px rgba(0,0,0,.25);animation:coinFall 900ms ease-in forwards}
   @keyframes coinFall{from{transform:translateY(-40px) rotate(0)}to{transform:translateY(120px) rotate(360deg);opacity:0}}
-  .flash{position:fixed;inset:0;background:#fff8;animation:flash 180ms ease-out forwards}
-  @keyframes flash{from{opacity:1}to{opacity:0}}.bolt{position:absolute;width:4px;height:120px;background:linear-gradient(#fff,#fff0);transform:skewX(-20deg);animation:boltDrop 280ms ease-out forwards}
-  @keyframes boltDrop{from{transform:translateY(-60px) skewX(-20deg)}to{transform:translateY(40px) skewX(-20deg);opacity:0}}
-  .rainbow{position:absolute;width:220px;height:110px;border-radius:110px 110px 0 0;background:conic-gradient(from 180deg,red,orange,yellow,green,blue,indigo,violet,red);mask:radial-gradient(110px 70px at 50% 100%,transparent 60%,black 61%);animation:rb 1.2s ease-out forwards}
-  @keyframes rb{from{transform:translateX(-160px);opacity:.2}to{transform:translateX(160px);opacity:0}}
-  .flake{position:absolute;width:10px;height:10px;background:radial-gradient(circle,#fff,#fff0);border-radius:50%;animation:flake 1200ms ease-in forwards}
-  @keyframes flake{from{transform:translate(-20px,-20px)}to{transform:translate(40px,120px);opacity:0}}
-  .sun{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#fff59d,#ffeb3b);box-shadow:0 0 20px #ffeb3b88;animation:sunUp 1s ease-out forwards}
-  .ray{position:absolute;width:4px;height:24px;background:#ffe082;top:-12px;left:50%;transform-origin:50% 52px;opacity:.9}
-  @keyframes sunUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(-20px);opacity:0}}
-  .crown{position:absolute;width:90px;height:60px;background:linear-gradient(180deg,#f7c948,#d2a21d);clip-path:polygon(0% 60%,15% 0,30% 60%,50% 0,70% 60%,85% 0,100% 60%,100% 100%,0% 100%);animation:crown 900ms ease-out forwards}
-  @keyframes crown{from{transform:translateY(-80px) rotate(-10deg);opacity:.2}to{transform:translateY(40px) rotate(6deg);opacity:0}}
-  .plane{position:absolute;width:120px;height:36px;border-radius:6px;background:linear-gradient(135deg,#b3e5fc,#90caf9);box-shadow:0 4px 10px rgba(0,0,0,.25);animation:fly 1s ease-in-out forwards}
-  .trail{position:absolute;width:140px;height:6px;background:linear-gradient(90deg,#fff8,#fff0);border-radius:6px;top:18px;left:-140px;animation:trail 1s ease-out forwards}
-  @keyframes fly{from{transform:translateX(-200px) translateY(40px) rotate(-6deg);opacity:.2}to{transform:translateX(200px) translateY(-40px) rotate(4deg);opacity:0}}
-  @keyframes trail{from{opacity:.8}to{opacity:0}}
-  .yacht{position:absolute;width:140px;height:40px;background:linear-gradient(180deg,#e0f7fa,#b2ebf2);border-radius:0 0 16px 16px;animation:float 1.2s ease-in-out forwards}
-  .wave{position:absolute;width:200px;height:40px;background:radial-gradient(circle,#90caf9,#90caf900);bottom:-8px;left:-30px;filter:blur(4px);animation:wave 1s ease-out forwards}
-  @keyframes float{from{transform:translateY(20px) rotate(-2deg);opacity:.4}50%{transform:translateY(-6px) rotate(2deg);opacity:1}to{transform:translateY(30px);opacity:0}}
-  @keyframes wave{from{opacity:.6}to{opacity:0}}
-  .phoenix{position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff9800,#f44336);box-shadow:0 0 30px #ff7043aa;animation:ph 1s ease-out forwards}
-  .flame{position:absolute;width:10px;height:24px;background:radial-gradient(circle,#ffa726,#ff7043);border-radius:6px 6px 16px 16px;filter:blur(.6px);animation:flick .3s ease-in-out infinite alternate}
-  @keyframes ph{from{transform:translateX(-120px) scale(.8);opacity:.4}50%{opacity:1}to{transform:translateX(160px) scale(1);opacity:0}}
-  @keyframes flick{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-6px) rotate(6deg)}}
-  .trailStar{position:absolute;width:8px;height:8px;background:radial-gradient(circle,#fff,#fff0);border-radius:50%;animation:tstar 600ms ease-out forwards}
-  @keyframes tstar{from{transform:scale(.8);opacity:.8}to{transform:scale(1.6) translateY(-40px);opacity:0}}
-  .castle{position:absolute;width:120px;height:80px;background:linear-gradient(180deg,#e3f2fd,#bbdefb);clip-path:polygon(0% 100%,0% 30%,20% 30%,20% 0%,34% 0%,34% 30%,66% 30%,66% 0%,80% 0%,80% 30%,100% 30%,100% 100%);box-shadow:0 4px 10px rgba(0,0,0,.25);animation:rise 1s ease-out forwards}
-  @keyframes rise{from{transform:translateY(80px);opacity:.2}to{transform:translateY(-20px);opacity:0}}
-  .chest{position:absolute;width:120px;height:60px;background:#6d4c41;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.25);animation:chest 900ms ease-out forwards}
-  .gold{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#ffd54f,#fbc02d);animation:goldUp 700ms ease-out forwards}
-  @keyframes chest{from{transform:translateY(40px)}to{transform:translateY(-10px);opacity:0}}
-  @keyframes goldUp{from{transform:translateY(0)}to{transform:translateY(-80px);opacity:0}}
 
-  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid rgba(127,127,127,.15);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px}
+  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid rgba(127,127,127,.15);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px;z-index:30}
   .nav .item{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted);text-decoration:none}
   .honeypot{position:relative;top:-22px;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,transparent),linear-gradient(135deg,#fce38a,#f38181);box-shadow:0 10px 30px rgba(243,129,129,.35), inset 0 0 0 4px rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;border:0}
-  .honeypot:after{content:"🍯";font-size:28px}.honeypot:active{transform:scale(.97)}
-  .toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #fff2;color:#fff;padding:10px 14px;border-radius:10px;backdrop-filter:blur(8px);font-size:13px;opacity:0;transition:.25s}
+  .honeypot:after{content:"🍯";font-size:28px}
+  .honeypot:active{transform:scale(.97)}
+
+  .toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #fff2;color:#fff;padding:10px 14px;border-radius:10px;backdrop-filter:blur(8px);font-size:13px;opacity:0;transition:.25s;z-index:40}
   .toast.show{opacity:1}
-  .footerNote{opacity:.6;text-align:center;font-size:11px;margin:20px 0}
+
   .err{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#ff3b30cc;color:#fff;padding:8px 12px;border-radius:10px;font-size:12px;z-index:50;display:none}
+  .footerNote{opacity:.6;text-align:center;font-size:11px;margin:20px 0}
 </style>
 </head>
 <body>
@@ -128,17 +121,20 @@
   <header>
     <div class="row">
       <div class="logo"><div class="logo-badge"></div> BuzzPi</div>
-      <div class="coins" id="balance">0</div>
+      <div class="coins" id="balance" title="Triple-tap: +100 • Long-press: +500">0</div>
     </div>
     <div class="tabs" id="topTabs">
-      <div class="chip active">Following</div><div class="chip">Popular</div><div class="chip">Nearby</div><div class="chip">Newcomers</div><div class="chip">Trending</div>
+      <div class="chip active">Following</div><div class="chip">Popular</div>
+      <div class="chip">Nearby</div><div class="chip">Newcomers</div><div class="chip">Trending</div>
     </div>
   </header>
 
   <section class="screen active" id="scrHome">
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-weight:800">Welcome to BuzzPi (Demo)</div>
-      <div class="muted">Tap the Gifts tab to try <b>alive</b> animations & coin flow.</div></div>
+    <div class="card"><div class="row">
+      <div>
+        <div style="font-weight:800">Welcome to BuzzPi (Demo)</div>
+        <div class="muted">Tap the Gifts tab to try <b>alive</b> animations & coin flow.</div>
+      </div>
       <div class="muted small">Theme-adaptive ✓</div>
     </div></div>
   </section>
@@ -158,12 +154,18 @@
         <button class="btn gold" id="btnTopup">Top up +100</button>
         <button class="btn" id="btnWatchAd">Watch Ad (+1)</button>
       </div>
-      <div class="muted small" style="margin-top:8px">Ad limit: 5/day • 5s cooldown</div>
+      <div class="rowBtns onecol" style="margin-top:8px">
+        <button class="btn secondary small" id="btnReset">Reset demo</button>
+      </div>
+      <div class="muted small" style="margin-top:8px">Ad limit: 5/day • 5s cooldown • Tip: triple-tap balance for +100, long-press for +500</div>
     </div>
+
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-weight:800">Level <span id="level">1</span></div>
-        <div class="muted">Spend 500 coins on gifts to level up</div></div>
+      <div class="row">
+        <div>
+          <div style="font-weight:800">Level <span id="level">1</span></div>
+          <div class="muted">Spend 500 coins on gifts to level up</div>
+        </div>
         <div class="muted small">Progress: <b id="lvPct">0%</b></div>
       </div>
       <div class="bar" style="margin-top:12px"><i id="lvBar"></i></div>
@@ -181,39 +183,44 @@
     </div>
   </section>
 
-  <div class="footerNote">If something looks stuck, refresh with <code>?v=3</code> to bust cache.</div>
+  <div class="footerNote">If anything looks cached, reload with <code>?v=6</code>.</div>
 </div>
 
+<!-- Stage for DOM-based anims -->
 <div class="stage" id="stage"></div>
+<!-- Canvas FX layer (created on demand) -->
+<canvas id="fx" style="position:fixed;inset:0;pointer-events:none;z-index:25;display:none;"></canvas>
+
 <div class="toast" id="toast"></div>
 
 <script>
-/* ---------- SAFETY & HELPERS ---------- */
-function $(sel){return document.querySelector(sel)}
+/* ====== Safety & helpers ====== */
+function $(s){return document.querySelector(s)}
 function el(tag,cls){const d=document.createElement(tag); if(cls) d.className=cls; return d}
 function showToast(msg,ms=1400){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
-function showErr(msg){const e=$('#err');e.textContent=msg; e.style.display='block'; setTimeout(()=>e.style.display='none',4000)}
-window.onerror = (m,src,l,c,e)=>{showErr('JS error: '+(e?.message||m));};
-window.onunhandledrejection = (ev)=>{showErr('Promise error: '+(ev?.reason?.message||ev?.reason||'unknown'));};
+function showErr(msg){const e=$('#err'); e.textContent=msg; e.style.display='block'; setTimeout(()=>e.style.display='none',4000)}
+window.onerror=(m,src,l,c,e)=>showErr('JS error: '+(e?.message||m));
+window.onunhandledrejection=(ev)=>showErr('Promise error: '+(ev?.reason?.message||ev?.reason||'unknown'));
 
-/* ---------- STATE ---------- */
+/* ====== State & persistence ====== */
 const S={regular:300,ad:0,spent:0,adsToday:0,lastAdDate:null,holdTimer:null};
-function save(){localStorage.setItem('buzz_demo_safe',JSON.stringify(S))}
-function load(){try{Object.assign(S,JSON.parse(localStorage.getItem('buzz_demo_safe')||'{}'))}catch(_){}}
+function save(){localStorage.setItem('buzz_demo_bfx',JSON.stringify(S))}
+function load(){try{Object.assign(S,JSON.parse(localStorage.getItem('buzz_demo_bfx')||'{}'))}catch(_){}}
 
-/* ---------- UI BIND ---------- */
+/* ====== UI ====== */
 const EL={
   screens:{home:$('#scrHome'),gifts:$('#scrGifts'),wallet:$('#scrWallet'),profile:$('#scrProfile')},
-  balance:$('#balance'),cRegular:$('#cRegular'),cAd:$('#cAd'),adInfo:$('#adInfo'),
-  btnTopup:$('#btnTopup'),btnWatchAd:$('#btnWatchAd'),
-  level:$('#level'),lvBar:$('#lvBar'),lvPct:$('#lvPct'),lvHint:$('#lvHint'),
+  balance:$('#balance'), cRegular:$('#cRegular'), cAd:$('#cAd'),
+  adInfo:$('#adInfo'), level:$('#level'), lvBar:$('#lvBar'), lvPct:$('#lvPct'), lvHint:$('#lvHint'),
   gridCommon:$('#gridCommon'),gridRare:$('#gridRare'),gridBillion:$('#gridBillion'),
-  stage:$('#stage')
+  stage:$('#stage'), btnTopup:$('#btnTopup'), btnWatchAd:$('#btnWatchAd'), btnReset:$('#btnReset'),
+  fx:$('#fx')
 };
 function fmt(n){return n.toLocaleString()}
 function updateUI(){
   $('#balance').textContent=fmt(S.regular+S.ad);
-  $('#cRegular').textContent=fmt(S.regular); $('#cAd').textContent=fmt(S.ad);
+  $('#cRegular').textContent=fmt(S.regular);
+  $('#cAd').textContent=fmt(S.ad);
   const today=new Date().toISOString().slice(0,10);
   if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today;save()}
   $('#adInfo').textContent=`Ads watched today: ${S.adsToday}/5`;
@@ -223,10 +230,10 @@ function updateUI(){
 }
 function spend(amount){
   if(amount>S.regular+S.ad) return false;
-  const useAd=Math.min(S.ad,amount); S.ad-=useAd; S.regular-= (amount-useAd); S.spent+=amount; save(); updateUI(); return true;
+  const useAd=Math.min(S.ad,amount); S.ad-=useAd; S.regular-=(amount-useAd); S.spent+=amount; save(); updateUI(); return true;
 }
 
-/* ---------- GIFTS DATA ---------- */
+/* ====== Gifts data ====== */
 const gifts={
   common:[
     {emoji:'🥳',name:'Party',price:1,anim:'party'},{emoji:'🥰',name:'Hearts',price:1,anim:'sparkle'},
@@ -235,81 +242,288 @@ const gifts={
     {emoji:'🤑',name:'Cashy',price:1,anim:'coins'},{emoji:'🍭',name:'Lollipop',price:2,anim:'sparkle'},
     {emoji:'🍬',name:'Candy',price:2,anim:'sparkle'},{emoji:'🍫',name:'Chocolate',price:2,anim:'sparkle'},
     {emoji:'🍸',name:'Cocktail',price:5,anim:'sparkle'},{emoji:'🍎',name:'Apple',price:5,anim:'sparkle'},
-    {emoji:'🍺',name:'Beer',price:5,anim:'sparkle'},{emoji:'🌹',name:'Rose',price:10,anim:'petals'},
+    {emoji:'🍺',name:'Beer',price:5,anim:'sparkle'},{emoji:'🌹',name:'Rose',price:10,anim:'rose'},
     {emoji:'🌸',name:'Blossom',price:10,anim:'rose'},{emoji:'✨',name:'Sparkle',price:10,anim:'sparkle'},
     {emoji:'💐',name:'Bouquet',price:20,anim:'rose'},{emoji:'🍻',name:'Cheers',price:20,anim:'clink'},
     {emoji:'👏',name:'Clap',price:20,anim:'clap'},{emoji:'💋',name:'Kiss',price:20,anim:'kiss'}
   ],
   rare:[
-    {emoji:'🦋',name:'Butterfly',price:50,anim:'Butterfly flap'},{emoji:'🌩',name:'Storm',price:50,anim:'storm'},
-    {emoji:'🌤',name:'Sunrise',price:50,anim:'sun'},{emoji:'🌈',name:'Rainbow',price:50,anim:'rainbow horizon'},
-    {emoji:'❄️',name:'Snow',price:50,anim:'snow flakes'},{emoji:'🧸',name:'Teddy',price:100,anim:'wiggling'},
-    {emoji:'🐇',name:'Bunny',price:100,anim:'hop'},{emoji:'🍾',name:'Champagne',price:100,anim:'pop'},
-    {emoji:'👑',name:'Crown',price:100,anim:'sparkle'},{emoji:'🍷',name:'Wine',price:100,anim:'swirling'},
+    {emoji:'🦋',name:'Butterfly',price:50,anim:'butterfly'},{emoji:'🌩',name:'Storm',price:50,anim:'storm'},
+    {emoji:'🌤',name:'Sunrise',price:50,anim:'sun'},{emoji:'🌈',name:'Rainbow',price:50,anim:'rainbow'},
+    {emoji:'❄️',name:'Snow',price:50,anim:'snow'},{emoji:'🧸',name:'Teddy',price:100,anim:'sparkle'},
+    {emoji:'🐇',name:'Bunny',price:100,anim:'sparkle'},{emoji:'🍾',name:'Champagne',price:100,anim:'champagne'},
+    {emoji:'👑',name:'Crown',price:100,anim:'crown'},{emoji:'🍷',name:'Wine',price:100,anim:'sparkle'},
     {emoji:'🥂',name:'Toast',price:100,anim:'clink'},{emoji:'🏎️',name:'Jade Lamborghini',price:500,anim:'car'},
-    {emoji:'✈️',name:'Crystal Aeroplane',price:500,anim:'plane'},{emoji:'🚙',name:'Golden Hummer',price:500,anim:'hummer'},
+    {emoji:'✈️',name:'Crystal Aeroplane',price:500,anim:'planeSimple'},{emoji:'🚙',name:'Golden Hummer',price:500,anim:'car'},
     {emoji:'🛥️',name:'Yacht',price:500,anim:'yacht'}
   ],
   billionaire:[
-    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000,anim:'phoenix'},{emoji:'🦄',name:'Racing Unicorn',price:1000,anim:'unicorn'},
-    {emoji:'🏰',name:'Crystal Castle',price:1000,anim:'castle'},{emoji:'💰',name:'Treasure Chest',price:1000,anim:'chest'},
-    {emoji:'🏯☁️',name:'Mansion in the Sky',price:5000,anim:'castle'},{emoji:'🧜‍♀️',name:'Mermaid',price:5000,anim:'sparkle'},
-    {emoji:'💘',name:'Cupids',price:5000,anim:'sparkle'},{emoji:'🧝‍♀️',name:'Elf Queen',price:5000,anim:'sparkle'},
-    {emoji:'🛩️✨',name:'Golden Private Jet',price:10000,anim:'plane'},{emoji:'💎⌚',name:'Diamond Rolex',price:10000,anim:'sparkle'},
-    {emoji:'🐎🚗',name:'Chariots of Horses',price:10000,anim:'unicorn'}
+    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000,anim:'phoenixFX'},
+    {emoji:'🦄',name:'Racing Unicorn',price:1000,anim:'unicornFX'},
+    {emoji:'🏰',name:'Crystal Castle',price:1000,anim:'castleFX'},
+    {emoji:'💰',name:'Treasure Chest',price:1000,anim:'chestFX'},
+    {emoji:'🏯☁️',name:'Mansion in the Sky',price:5000,anim:'castleFX'},
+    {emoji:'🧜‍♀️',name:'Mermaid',price:5000,anim:'sparkle'},
+    {emoji:'💘',name:'Cupids',price:5000,anim:'sparkle'},
+    {emoji:'🧝‍♀️',name:'Elf Queen',price:5000,anim:'sparkle'},
+    {emoji:'🛩️✨',name:'Golden Private Jet',price:10000,anim:'jetFX'},
+    {emoji:'💎⌚',name:'Diamond Rolex',price:10000,anim:'rolexFX'},
+    {emoji:'🐎🚗',name:'Chariots of Horses',price:10000,anim:'unicornFX'}
   ]
 };
 
-/* ---------- RENDER ---------- */
-function giftEl(g){const el=elDiv('gift'); el.dataset.price=g.price; el.dataset.anim=g.anim||''; el.dataset.name=g.name; el.innerHTML=`<div class="emo">${g.emoji}</div><div class="name">${g.name}</div><div class="price">${fmt(g.price)}🪙</div>`; return el}
-function elDiv(cls){const d=document.createElement('div'); d.className=cls; return d}
+/* ====== Render gifts ====== */
+function giftEl(g){const e=el('div','gift'); e.dataset.price=g.price; e.dataset.anim=g.anim||''; e.dataset.name=g.name; e.innerHTML=`<div class="emo">${g.emoji}</div><div class="name">${g.name}</div><div class="price">${fmt(g.price)}🪙</div>`; return e}
 function mountGifts(){
   gifts.common.forEach(g=>EL.gridCommon.appendChild(giftEl(g)));
   gifts.rare.forEach(g=>{const e=giftEl(g); e.dataset.tier='rare'; EL.gridRare.appendChild(e)});
   gifts.billionaire.forEach(g=>{const e=giftEl(g); e.dataset.tier='billionaire'; EL.gridBillion.appendChild(e)});
 }
 
-/* ---------- ANIM DISPATCH (wrapped in try/catch) ---------- */
+/* ====== DOM (non-billionaire) anim helpers ====== */
 function center(){return {x:innerWidth/2,y:innerHeight/2}}
 function add(node,ms=1000){EL.stage.appendChild(node); setTimeout(()=>node.remove(),ms)}
-function safe(fn){try{fn()}catch(e){showErr(e.message||'Anim error')}}
-function runAnim(key, emoji){
-  const map={
-    party:anim_party, lick:anim_lick, butterfly:anim_butterfly, car:()=>anim_car(false), hummer:()=>anim_car(true),
-    rose:anim_rose, champagne:anim_champagne, clink:anim_clink, clap:anim_clap, kiss:anim_kiss, coins:anim_coins,
-    storm:anim_storm, rainbow:anim_rainbow, snow:anim_snow, sun:anim_sun, crown:anim_crown,
-    plane:()=>anim_plane(false), yacht:anim_yacht, phoenix:anim_phoenix, unicorn:anim_unicorn, castle:anim_castle, chest:anim_chest,
-    sparkle:anim_sparkle
-  };
-  safe(()=> (map[key]||(()=>fallback(emoji)))() );
-}
-
-/* ---------- (Anim functions – same as previous; trimmed here) ---------- */
 function fallback(emoji){const p=el('div','pop');const {x,y}=center();p.textContent=emoji;p.style.left=(x-28)+'px';p.style.top=(y-28)+'px';EL.stage.appendChild(p);for(let i=0;i<10;i++){const s=el('div','spark');s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',((Math.random()*2-1)*140|0)+'px');s.style.setProperty('--dy',(-60-Math.random()*120|0)+'px');EL.stage.appendChild(s);setTimeout(()=>s.remove(),800)}setTimeout(()=>p.remove(),620)}
-function anim_party(){const box=el('div','party');const {x,y}=center();box.style.left=(x-60)+'px';box.style.top=(y-60)+'px';const horn=el('div','horn');box.appendChild(horn);for(let i=0;i<18;i++){const c=el('div','conf');c.style.left=(50+Math.random()*40-20)+'px';c.style.top=(40+Math.random()*10-5)+'px';c.style.background=['#f44336','#ff9800','#ffeb3b','#4caf50','#2196f3','#9c27b0'][i%6];c.style.animationDelay=(i*30)+'ms';box.appendChild(c)}add(box,1000)}
+/* party, lick, butterfly, cars, rose, champagne, clink, clap, kiss, coins, sky, sun, crown, planeSimple, yacht */
+function anim_party(){const box=el('div','party');const {x,y}=center();box.style.left=(x-60)+'px';box.style.top=(y-60)+'px';box.appendChild(el('div','horn'));for(let i=0;i<18;i++){const c=el('div','conf');c.style.left=(50+Math.random()*40-20)+'px';c.style.top=(40+Math.random()*10-5)+'px';c.style.background=['#f44336','#ff9800','#ffeb3b','#4caf50','#2196f3','#9c27b0'][i%6];c.style.animationDelay=(i*30)+'ms';box.appendChild(c)}add(box,1000)}
 function anim_lick(){const b=el('div','lick');const {x,y}=center();b.style.left=(x-60)+'px';b.style.top=(y-60)+'px';const m=el('div','mouth');const t=el('div','tongue');m.appendChild(t);b.appendChild(m);add(b,900)}
 function anim_butterfly(){const {x,y}=center();const r=el('div','bfly');r.style.left=(x-32)+'px';r.style.top=y+'px';r.innerHTML='<div class="bf-body"></div><div class="wing left"></div><div class="wing right"></div>';add(r,1000)}
 function anim_car(){const {x,y}=center();const car=el('div','car');car.style.left=(x-60)+'px';car.style.top=y+'px';car.innerHTML='<div class="car-body"></div><div class="wheel l"></div><div class="wheel r"></div>';for(let i=0;i<3;i++){const s=el('div','smoke');s.style.left=(x-30)+'px';s.style.top=(y+20)+'px';s.style.animationDelay=(i*120)+'ms';add(s,600+i*120)}add(car,1400)}
 function anim_rose(){const {x,y}=center();for(let i=0;i<12;i++){const p=el('div','petal');p.style.left=(x+(Math.random()*120-60))+'px';p.style.top=(y+(Math.random()*-30-10))+'px';p.style.animationDelay=(i*40)+'ms';add(p,1000+i*40)}}
 function anim_champagne(){const {x,y}=center();for(let i=0;i<14;i++){const b=el('div','bubble');b.style.left=(x+(Math.random()*50-25))+'px';b.style.top=(y+20+(Math.random()*20-10))+'px';b.style.animationDelay=(i*40)+'ms';add(b,1000+i*40)}}
-function anim_clink(){const {x,y}=center();for(let i=0;i<6;i++){const c=el('div','clink');c.style.left=(x+(Math.random()*30-15))+'px';c.style.top=(y+(Math.random()*-10-10))+'px';c.style.animationDelay=(i*50)+'ms';add(c,500+i*50)}}
+function anim_clink(){const {x,y}=center();for(let i=0;i<6;i++){const c=el('div','clink');c.style.left=(x+(Math.random()*30-15))+'px';c.style.top=(y-10)+'px';c.style.animationDelay=(i*50)+'ms';add(c,500+i*50)}}
 function anim_clap(){const {x,y}=center();for(let i=0;i<6;i++){const s=el('div','shock');s.style.left=(x+(i*8-20))+'px';s.style.top=(y-6)+'px';add(s,420)}}
 function anim_kiss(){const {x,y}=center();for(let i=0;i<6;i++){const k=el('div','kiss');k.textContent='💋';k.style.left=(x+(Math.random()*40-20))+'px';k.style.top=(y+10)+'px';k.style.animationDelay=(i*60)+'ms';add(k,900+i*60)}}
 function anim_coins(){const {x,y}=center();for(let i=0;i<20;i++){const c=el('div','coin');c.style.left=(x+(Math.random()*120-60))+'px';c.style.top=(y-40+(Math.random()*20-10))+'px';c.style.animationDelay=(i*30)+'ms';add(c,900+i*30)}}
-function anim_sparkle(){const {x,y}=center();for(let i=0;i<10;i++){const s=el('div','spark');s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',((Math.random()*2-1)*140|0)+'px');s.style.setProperty('--dy',(-60-Math.random()*120|0)+'px');add(s,800)}}
 function anim_storm(){add(el('div','flash'),180);const {x,y}=center();for(let i=0;i<3;i++){const b=el('div','bolt');b.style.left=(x+(i*16-24))+'px';b.style.top=(y-40)+'px';add(b,280)}}
 function anim_rainbow(){const r=el('div','rainbow');const {x,y}=center();r.style.left=(x-110)+'px';r.style.top=(y-80)+'px';add(r,1200)}
 function anim_snow(){const {x,y}=center();for(let i=0;i<14;i++){const f=el('div','flake');f.style.left=(x+(Math.random()*80-40))+'px';f.style.top=(y-40)+'px';add(f,1200)}}
 function anim_sun(){const {x,y}=center();const s=el('div','sun');s.style.left=(x-40)+'px';s.style.top=(y-40)+'px';for(let i=0;i<12;i++){const r=el('div','ray');r.style.transform=`rotate(${i*30}deg)`;s.appendChild(r)}add(s,1000)}
 function anim_crown(){const c=el('div','crown');const {x,y}=center();c.style.left=(x-45)+'px';c.style.top=(y-60)+'px';add(c,900)}
-function anim_plane(){const {x,y}=center();const p=el('div','plane');p.style.left=(x-60)+'px';p.style.top=y+'px';const t=el('div','trail');p.appendChild(t);add(p,1000)}
+function anim_planeSimple(){const {x,y}=center();const p=el('div','plane');p.style.left=(x-60)+'px';p.style.top=y+'px';p.appendChild(el('div','trail'));add(p,1000)}
 function anim_yacht(){const {x,y}=center();const yb=el('div','yacht');yb.style.left=(x-70)+'px';yb.style.top=y+'px';yb.appendChild(el('div','wave'));add(yb,1200)}
-function anim_phoenix(){const {x,y}=center();const ph=el('div','phoenix');ph.style.left=(x-45)+'px';ph.style.top=(y-45)+'px';for(let i=0;i<6;i++){const fl=el('div','flame');fl.style.left=(10+i*12)+'px';fl.style.top='56px';fl.style.animationDelay=(i*80)+'ms';ph.appendChild(fl)}add(ph,1000)}
-function anim_unicorn(){const {x,y}=center();for(let i=0;i<10;i++){const t=el('div','trailStar');t.style.left=(x-60+i*12)+'px';t.style.top=(y-10-Math.random()*20)+'px';add(t,600)}}
-function anim_castle(){const {x,y}=center();const c=el('div','castle');c.style.left=(x-60)+'px';c.style.top=(y-40)+'px';add(c,1000)}
-function anim_chest(){const {x,y}=center();const ch=el('div','chest');ch.style.left=(x-60)+'px';ch.style.top=(y-20)+'px';add(ch,900);for(let i=0;i<14;i++){const g=el('div','gold');g.style.left=(x+(Math.random()*80-40))+'px';g.style.top=y+'px';g.style.animationDelay=(i*40)+'ms';add(g,700+i*40)}}
 
-/* ---------- INTERACTION ---------- */
+/* ====== Canvas FX (Billionaire) ====== */
+function ensureFX(){
+  const c=EL.fx; c.width=innerWidth*devicePixelRatio; c.height=innerHeight*devicePixelRatio;
+  c.style.display='block'; const ctx=c.getContext('2d'); ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  return {c,ctx,w:innerWidth,h:innerHeight};
+}
+function endFX(){ EL.fx.style.display='none'; const ctx=EL.fx.getContext('2d'); ctx.clearRect(0,0,EL.fx.width,EL.fx.height); }
+
+/* tiny utils */
+const R=()=>Math.random(); const PI=Math.PI; const TAU=Math.PI*2;
+function lerp(a,b,t){return a+(b-a)*t}
+function easeOutCubic(t){return 1-Math.pow(1-t,3)}
+function easeInOut(t){return t<.5? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2}
+function blendAdd(ctx){ctx.globalCompositeOperation='lighter'}
+function blendNorm(ctx){ctx.globalCompositeOperation='source-over'}
+function shakeFrame(ctx, t, mag){ ctx.save(); const s=mag*Math.sin(t*40); ctx.translate(R()*s - s/2, R()*s - s/2) }
+function shakeRestore(ctx){ ctx.restore() }
+
+/* --- Phoenix (fire trail + glow + swoop + shake) --- */
+function phoenixFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1300;
+  function flame(x,y,r,alpha){
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`rgba(255,180,60,${alpha})`);
+    g.addColorStop(.5,`rgba(255,90,20,${alpha*.9})`);
+    g.addColorStop(1,`rgba(80,0,0,0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
+  }
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur);
+    ctx.clearRect(0,0,w,h);
+    const p=easeInOut(t);
+    const x=lerp(-w*0.2, w*1.1, p);
+    const y=lerp(h*0.7,  h*0.2, p);
+    blendAdd(ctx);
+    // trail particles
+    for(let i=0;i<140;i++){
+      const b=R()*80+20;
+      const a=(1-t)*(R()*0.5+0.3);
+      const px=x - R()*160, py=y + R()*60 - 30;
+      flame(px,py,b*0.25,a*0.9);
+    }
+    // body glow
+    flame(x,y,40,0.9);
+    // head highlight
+    ctx.fillStyle='rgba(255,240,200,.9)';
+    ctx.beginPath(); ctx.arc(x+6,y-6,6,0,TAU); ctx.fill();
+    blendNorm(ctx);
+
+    // light vignette
+    ctx.fillStyle='rgba(255,150,60,0.06)';
+    ctx.fillRect(0,0,w,h);
+
+    if(t<1){ requestAnimationFrame(loop); }
+    else { // exit burst + micro shake
+      const burstStart=performance.now(); const bd=220;
+      (function burst(now2){
+        const tb=Math.min(1,(now2-burstStart)/bd);
+        ctx.clearRect(0,0,w,h);
+        shakeFrame(ctx,tb,4);
+        blendAdd(ctx);
+        flame(x+20,y-10,120*(1-tb*0.6),0.55*(1-tb));
+        blendNorm(ctx);
+        shakeRestore(ctx);
+        if(tb<1) requestAnimationFrame(burst); else endFX();
+      })(burstStart);
+    }
+  })(start);
+}
+
+/* --- Unicorn (rainbow trail + stars) --- */
+function unicornFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1400;
+  ctx.font='64px system-ui, Apple Color Emoji, Segoe UI Emoji';
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur), p=easeInOut(t);
+    ctx.clearRect(0,0,w,h);
+    const x=lerp(-80,w+80,p), y=lerp(h*0.65,h*0.35,p);
+    // rainbow trail
+    const grad=ctx.createLinearGradient(x-160,y-40,x,y+40);
+    ['red','orange','yellow','green','blue','indigo','violet'].forEach((c,i)=>grad.addColorStop(i/6,c));
+    ctx.globalAlpha=0.8*(1-t); ctx.fillStyle=grad; ctx.fillRect(x-180,y-20,160,40); ctx.globalAlpha=1;
+    // stars
+    blendAdd(ctx);
+    for(let i=0;i<40;i++){
+      const sx=x- (R()*160); const sy=y+(R()*60-30);
+      const r=R()*2+1; ctx.fillStyle='rgba(255,255,255,.9)';
+      ctx.beginPath(); ctx.arc(sx,sy,r,0,TAU); ctx.fill();
+    }
+    blendNorm(ctx);
+    // the unicorn emoji as the hero
+    ctx.fillText('🦄', x-24, y+18);
+    if(t<1) requestAnimationFrame(loop); else endFX();
+  })(start);
+}
+
+/* --- Jet (contrail + shock ring + shake) --- */
+function jetFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1200;
+  ctx.font='60px system-ui, Apple Color Emoji, Segoe UI Emoji';
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur), p=easeInOut(t);
+    ctx.clearRect(0,0,w,h);
+    const x=lerp(-120,w+120,p), y=lerp(h*0.55,h*0.35,p);
+    // contrail
+    blendAdd(ctx);
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.fillRect(x-160,y-4,150,8);
+    // shock ring at mid
+    if(t>0.45 && t<0.7){
+      const k=(t-0.45)/0.25, r=lerp(10,120,k);
+      ctx.strokeStyle='rgba(255,255,255,'+(1-k)+')'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(x-40,y,r,0,TAU); ctx.stroke();
+    }
+    blendNorm(ctx);
+    // plane emoji
+    ctx.fillText('🛩️', x-20, y+18);
+    if(t<1){ requestAnimationFrame(loop); }
+    else{
+      // brief shake & fade
+      const s0=performance.now(), d=180;
+      (function shake(now2){
+        const tt=(now2-s0)/d; ctx.clearRect(0,0,w,h);
+        shakeFrame(ctx, tt, 3); ctx.fillStyle='rgba(255,255,255,'+(1-tt)+')'; ctx.fillRect(0,0,w,h); shakeRestore(ctx);
+        if(tt<1) requestAnimationFrame(shake); else endFX();
+      })(s0);
+    }
+  })(start);
+}
+
+/* --- Castle (prism sparkles + shine) --- */
+function castleFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1400;
+  ctx.font='70px system-ui, Apple Color Emoji, Segoe UI Emoji';
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur); const p=easeOutCubic(t);
+    ctx.clearRect(0,0,w,h);
+    const x=w/2, y=lerp(h*0.8,h*0.45,p);
+    // glow base
+    blendAdd(ctx);
+    for(let i=0;i<3;i++){
+      ctx.fillStyle=`rgba(180,220,255,${0.15*(1-t)})`;
+      ctx.beginPath(); ctx.arc(x,y+20,120+i*20,0,TAU); ctx.fill();
+    }
+    // sparkles
+    for(let i=0;i<40;i++){
+      const ang=R()*TAU, r=R()*120; const px=x+Math.cos(ang)*r, py=y+Math.sin(ang)*r;
+      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(px,py,2,2);
+    }
+    blendNorm(ctx);
+    // castle glyph
+    ctx.textAlign='center'; ctx.fillText('🏰', x, y);
+    if(t<1) requestAnimationFrame(loop); else endFX();
+  })(start);
+}
+
+/* --- Chest (coin fountain) --- */
+function chestFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1300;
+  const coins=Array.from({length:80},()=>({
+    x:w/2 + (R()*120-60), y:h*0.6, vx:(R()*2-1)*2, vy:- (R()*4+3), r:R()*3+2, a:1
+  }));
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur);
+    ctx.clearRect(0,0,w,h);
+    // chest body
+    ctx.fillStyle='#6d4c41'; ctx.fillRect(w/2-60,h*0.6,120,50);
+    ctx.fillStyle='#8d6e63'; ctx.fillRect(w/2-60,h*0.6-20,120,22);
+    // coins
+    blendAdd(ctx);
+    coins.forEach(c=>{
+      c.x+=c.vx; c.y+=c.vy; c.vy+=0.15; c.a*=0.985;
+      const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r*2.2);
+      g.addColorStop(0,`rgba(255,240,180,${c.a})`);
+      g.addColorStop(1,`rgba(255,215,80,0)`);
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,TAU); ctx.fill();
+    });
+    blendNorm(ctx);
+    if(t<1) requestAnimationFrame(loop); else endFX();
+  })(start);
+}
+
+/* --- Rolex (prismatic sparkle ring) --- */
+function rolexFX(){
+  const {ctx,w,h}=ensureFX(); const start=performance.now(); const dur=1100;
+  const x=w/2, y=h/2, R0=26, R1=120;
+  (function loop(now){
+    const t=Math.min(1,(now-start)/dur);
+    ctx.clearRect(0,0,w,h);
+    blendAdd(ctx);
+    for(let i=0;i<32;i++){
+      const ang=i*(TAU/32) + now*0.006;
+      const r=lerp(R0,R1,t);
+      const px=x+Math.cos(ang)*r, py=y+Math.sin(ang)*r;
+      ctx.fillStyle=`hsla(${(i*12)%360},100%,70%,${1-t})`;
+      ctx.beginPath(); ctx.arc(px,py,3,0,TAU); ctx.fill();
+    }
+    blendNorm(ctx);
+    // center glint
+    ctx.fillStyle='rgba(255,255,255,'+(1-t)+')'; ctx.beginPath(); ctx.arc(x,y,6,0,TAU); ctx.fill();
+    if(t<1) requestAnimationFrame(loop); else endFX();
+  })(start);
+}
+
+/* ====== Dispatch ====== */
+const dispatch={
+  // common/rare
+  party:anim_party, lick:anim_lick, butterfly:anim_butterfly, car:anim_car,
+  rose:anim_rose, champagne:anim_champagne, clink:anim_clink, clap:anim_clap, kiss:anim_kiss, coins:anim_coins,
+  storm:anim_storm, rainbow:anim_rainbow, snow:anim_snow, sun:anim_sun, crown:anim_crown,
+  planeSimple:anim_planeSimple, yacht:anim_yacht,
+
+  // billionaire
+  phoenixFX:phoenixFX, unicornFX:unicornFX, castleFX:castleFX, chestFX:chestFX, jetFX:jetFX, rolexFX:rolexFX,
+
+  // fallback
+  sparkle:()=>fallback('✨')
+};
+function runAnim(key, emoji){ (dispatch[key] || (()=>fallback(emoji)))() }
+
+/* ====== Interactions ====== */
 function show(id){Object.values(EL.screens).forEach(s=>s.classList.remove('active')); EL.screens[id].classList.add('active')}
 function mountNav(){
   const nav=el('nav','nav'); nav.innerHTML=`<a class="item" data-go="home"><div>🏠</div><div>Home</div></a>
@@ -336,18 +550,34 @@ function bindGifting(){
   document.addEventListener('pointerup',e=>{clearTimeout(S.holdTimer); const el=e.target.closest('.gift'); if(!el) return; if(!pressing) sendOne(el); stopHold()})
   document.addEventListener('pointerleave',()=>{clearTimeout(S.holdTimer); stopHold()})
 }
+
+/* Wallet buttons + dev gestures */
 function bindWallet(){
-  $('#btnTopup').addEventListener('click',()=>{S.regular+=100;save();updateUI();showToast('+100 BuzzCoins')})
-  let cool=false; $('#btnWatchAd').addEventListener('click',()=>{
-    const today=new Date().toISOString().slice(0,10); if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today}
+  EL.btnTopup.addEventListener('click',()=>{S.regular+=100; save(); updateUI(); showToast('+100 BuzzCoins')});
+  EL.btnReset.addEventListener('click',()=>{localStorage.removeItem('buzz_demo_bfx'); S.regular=300; S.ad=0; S.spent=0; S.adsToday=0; S.lastAdDate=null; save(); updateUI(); showToast('Demo reset')});
+
+  // Ads with 5/day + 5s cooldown
+  let cool=false;
+  EL.btnWatchAd.addEventListener('click',()=>{
+    const today=new Date().toISOString().slice(0,10);
+    if(S.lastAdDate!==today){S.adsToday=0;S.lastAdDate=today}
     if(S.adsToday>=5) return showToast('Daily ad limit reached');
     if(cool) return showToast('Please wait 5s…');
     S.ad+=1; S.adsToday+=1; save(); updateUI(); showToast('+1 from Ad');
-    cool=true; $('#btnWatchAd').disabled=true; setTimeout(()=>{cool=false; $('#btnWatchAd').disabled=false},5000);
-  })
+    cool=true; EL.btnWatchAd.disabled=true; setTimeout(()=>{cool=false; EL.btnWatchAd.disabled=false},5000);
+  });
+
+  // Dev gestures on balance: triple-tap = +100, long-press = +500
+  let taps=0, tapTimer=null, pressTimer=null;
+  EL.balance.addEventListener('pointerdown',()=>{ pressTimer=setTimeout(()=>{ S.regular+=500; save(); updateUI(); showToast('+500 (long-press)') }, 600); });
+  EL.balance.addEventListener('pointerup',()=>{
+    clearTimeout(pressTimer);
+    taps++; clearTimeout(tapTimer);
+    tapTimer=setTimeout(()=>{ if(taps>=3){ S.regular+=100; save(); updateUI(); showToast('+100 (triple-tap)') } taps=0; }, 320);
+  });
 }
 
-/* ---------- BOOT ---------- */
+/* ====== Boot ====== */
 document.addEventListener('DOMContentLoaded', ()=>{
   try{
     load(); updateUI(); mountGifts(); bindGifting(); bindWallet(); mountNav();
