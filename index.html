@@ -1,150 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BuzzPi – Pi SDK Sandbox (Diagnostics)</title>
-  <style>
-    :root{--pri:#7b5df9;--bg:#fafafa;--txt:#111}
-    body{font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--txt);margin:0;padding:24px}
-    h1{margin:0 0 10px;font-size:28px;color:#5b35f6;text-align:center}
-    p.lead{text-align:center;margin:0 0 24px;color:#444}
-    .wrap{max-width:860px;margin:0 auto}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
-    .card h3{margin:0 0 12px;font-size:18px}
-    .full{grid-column:1/-1}
-    button{appearance:none;border:0;border-radius:10px;background:var(--pri);color:#fff;font-weight:700;padding:12px 18px;cursor:pointer}
-    button[disabled]{opacity:.6;cursor:not-allowed}
-    .hint{font-size:13px;color:#666;margin-top:6px}
-    .log{white-space:pre-wrap;background:#0e0e0e;color:#eaeaea;border-radius:10px;padding:14px;min-height:120px}
-    code{background:#f1f1f1;padding:2px 6px;border-radius:6px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>BuzzPi — Demo</title>
+<meta name="theme-color" content="#0b0b0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<style>
+  :root{
+    --bg:#ffffff; --fg:#0e0e12; --muted:#68707a; --card:#f7f8fa; --gold:#f7c948; --gold2:#e8b12e; --accent:#7b5df9;
+    --ring:0 6px 18px rgba(0,0,0,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0b0f; --fg:#eef0f3; --muted:#98a0aa; --card:#111318; --ring:0 8px 24px rgba(0,0,0,.45); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  .app{max-width:800px;margin:0 auto;padding-bottom:84px}
+  header{position:sticky;top:0;z-index:30;background:var(--bg);padding:12px 16px;border-bottom:1px solid rgba(127,127,127,.15)}
+  .row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+  .logo{display:flex;gap:10px;align-items:center;font-weight:800}
+  .logo-badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:var(--ring)}
+  .tabs{display:flex;gap:8px;overflow:auto;padding:10px 16px}
+  .chip{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:var(--card);font-weight:600;color:var(--muted)}
+  .chip.active{background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff}
+  .screen{display:none;padding:12px 16px}
+  .screen.active{display:block}
+
+  /* Wallet */
+  .card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--ring);margin-bottom:14px}
+  .coins{font-size:28px;font-weight:800}
+  .muted{color:var(--muted);font-size:13px}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
+  .btn.secondary{background:linear-gradient(135deg,#222,#333)}
+  .btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#212121}
+  .rowBtns{display:flex;gap:10px;flex-wrap:wrap}
+  .small{font-size:12px}
+  .bar{height:10px;background:#1f2330;border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5b35f6,#7b5df9)}
+
+  /* Gift Shop */
+  .gsec{margin:18px 0}
+  .gtitle{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+  .gtitle span{font-weight:800}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:520px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  .gift{background:var(--card);border-radius:14px;padding:10px;text-align:center;cursor:pointer;user-select:none;position:relative;box-shadow:var(--ring)}
+  .gift .emo{font-size:26px;line-height:1}
+  .gift .name{font-size:11px;color:var(--muted);margin-top:4px}
+  .gift .price{font-size:12px;font-weight:800;margin-top:4px}
+  .gift:active{transform:scale(.98)}
+  .gift[data-tier="billionaire"]{outline:2px solid rgba(247,201,72,.25)}
+  .gift[data-tier="rare"]{outline:2px solid rgba(91,53,246,.25)}
+
+  /* Center stage animations */
+  .stage{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+  .pop{position:absolute;font-size:64px;animation:pop .6s ease-out forwards}
+  @keyframes pop{0%{transform:scale(.5);opacity:.0} 40%{transform:scale(1.1);opacity:1} 100%{transform:scale(1) translateY(-120px);opacity:0}}
+  .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff,#ffd);animation:spark 800ms ease-out forwards}
+  @keyframes spark{from{transform:translate(0,0);opacity:1} to{transform:translate(var(--dx),var(--dy));opacity:0}}
+  .combo{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-weight:900;font-size:28px;background:linear-gradient(135deg,#5b35f6,#7b5df9);color:#fff;padding:6px 12px;border-radius:12px;box-shadow:var(--ring);opacity:0;animation:combo .3s ease forwards}
+  @keyframes combo{to{opacity:1;transform:translateX(-50%) scale(1.05)}}
+
+  /* Bottom nav + honeypot */
+  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid rgba(127,127,127,.15);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px}
+  .nav .item{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted);text-decoration:none}
+  .honeypot{position:relative;top:-22px;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,transparent),linear-gradient(135deg,#fce38a,#f38181);box-shadow:0 10px 30px rgba(243,129,129,.35), inset 0 0 0 4px rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;border:0}
+  .honeypot:after{content:"🍯";font-size:28px}
+  .honeypot:active{transform:scale(.97)}
+  .tag{font-size:11px;color:var(--muted)}
+
+  /* Toast */
+  .toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #fff2;color:#fff;padding:10px 14px;border-radius:10px;backdrop-filter:blur(8px);font-size:13px;opacity:0;transition:.25s}
+  .toast.show{opacity:1}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>BuzzPi Pi SDK Sandbox – Diagnostics</h1>
-    <p class="lead">Open this page in the <b>Pi Browser</b> after enabling <b>Sandbox Mode</b> in the Pi app.</p>
+<div class="app">
 
+  <header>
     <div class="row">
-      <div class="card">
-        <h3>1) Initialize Pi SDK (sandbox)</h3>
-        <button id="btnInit">Init SDK</button>
-        <div class="hint">If nothing logs, re-enter Sandbox code: Pi App → Menu → Utilities → Sandbox Mode.</div>
-      </div>
+      <div class="logo"><div class="logo-badge"></div> BuzzPi</div>
+      <div class="coins" id="balance">0</div>
+    </div>
+    <div class="tabs" id="topTabs">
+      <div class="chip active">Following</div>
+      <div class="chip">Popular</div>
+      <div class="chip">Nearby</div>
+      <div class="chip">Newcomers</div>
+      <div class="chip">Trending</div>
+    </div>
+  </header>
 
-      <div class="card">
-        <h3>2) Sign in (username scope only)</h3>
-        <button id="btnLogin" disabled>Sign In</button>
-        <div class="hint">We’ll re-enable <code>payments</code> after this works.</div>
-      </div>
-
-      <div class="card">
-        <h3>Tools: SDK Check</h3>
-        <button id="btnCheck">Run SDK Check</button>
-        <div class="hint">Logs SDK methods so we know what’s available on your device.</div>
-      </div>
-
-      <div class="card">
-        <h3>Tools: Test UI Popup</h3>
-        <button id="btnPopup">Open Test Popup</button>
-        <div class="hint">Calls <code>Pi.openShareDialog</code> (no permissions). If no popup, the UI channel is blocked.</div>
-      </div>
-
-      <div class="card full">
-        <h3>Console</h3>
-        <div id="log" class="log">Console ready…</div>
+  <!-- HOME (placeholder) -->
+  <section class="screen active" id="scrHome">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800">Welcome to BuzzPi (Demo)</div>
+          <div class="muted">Tap the Gifts tab to try animations & coin flow.</div>
+        </div>
+        <div class="tag">Theme-adaptive ✓</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Pi Browser SDK -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <!-- GIFTS -->
+  <section class="screen" id="scrGifts">
+    <!-- Common -->
+    <div class="gsec">
+      <div class="gtitle"><span>Common</span><small class="muted">1–20 BuzzCoins</small></div>
+      <div class="grid" id="gridCommon"></div>
+    </div>
 
-  <script>
-    const $ = (id)=>document.getElementById(id);
-    const log = (...a)=>{ $('log').textContent += a.join(' ') + "\n"; console.log(...a); };
+    <!-- Rare -->
+    <div class="gsec">
+      <div class="gtitle"><span>Rare</span><small class="muted">50–500 BuzzCoins</small></div>
+      <div class="grid" id="gridRare"></div>
+    </div>
 
-    const btnInit  = $('btnInit');
-    const btnLogin = $('btnLogin');
-    const btnCheck = $('btnCheck');
-    const btnPopup = $('btnPopup');
+    <!-- Billionaire -->
+    <div class="gsec">
+      <div class="gtitle"><span>Billionaire</span><small class="muted">1,000–10,000 BuzzCoins</small></div>
+      <div class="grid" id="gridBillion"></div>
+    </div>
+  </section>
 
-    let sdkReady = false;
+  <!-- WALLET -->
+  <section class="screen" id="scrWallet">
+    <div class="card">
+      <div class="coins"><span id="cRegular">0</span> <span class="muted">BuzzCoins</span></div>
+      <div class="muted">Ad-earned balance: <b id="cAd">0</b> (gifting only)</div>
+      <div class="muted small" id="adInfo"></div>
+      <div class="rowBtns" style="margin-top:12px">
+        <button class="btn gold" id="btnTopup">Top up +100</button>
+        <button class="btn" id="btnWatchAd">Watch Ad (+1)</button>
+      </div>
+      <div class="muted small" style="margin-top:8px">Ad limit: 5/day • 5s cooldown</div>
+    </div>
 
-    // On load
-    (function bootCheck(){
-      const hasPi = typeof window.Pi !== 'undefined';
-      log(`🔎 window.Pi present: ${hasPi}`);
-      if(!hasPi) log('⚠️ Load this URL inside Pi Browser. Normal browsers do not inject window.Pi.');
-    })();
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800">Level <span id="level">1</span></div>
+          <div class="muted">Spend 500 coins on gifts to level up</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted small">Progress: <b id="lvPct">0%</b></div>
+        </div>
+      </div>
+      <div class="bar" style="margin-top:12px"><i id="lvBar"></i></div>
+      <div class="muted small" id="lvHint" style="margin-top:8px"></div>
+    </div>
+  </section>
 
-    btnInit.addEventListener('click', () => {
-      if (!window.Pi) { log('❌ Pi SDK not found. Ensure Pi Browser + Sandbox Mode are active.'); return; }
-      try {
-        Pi.init({ version: "2.0", sandbox: true });
-        sdkReady = true;
-        btnLogin.disabled = false;
-        log('✅ Pi.init({ sandbox:true }) completed.');
-      } catch (e) {
-        log('❌ Pi.init error:', e?.message || e);
-      }
-    });
+  <!-- PROFILE -->
+  <section class="screen" id="scrProfile">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="logo-badge" style="width:44px;height:44px;border-radius:12px"></div>
+        <div>
+          <div style="font-weight:800">You (Demo)</div>
+          <div class="muted small">Ranked badge & frames appear here later.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:800;margin-bottom:8px">Stealth Mode (Phase 2)</div>
+      <div class="muted small">Face mask + voice modulation will be here in Phase 2.</div>
+    </div>
+  </section>
 
-    btnLogin.addEventListener('click', async () => {
-      log('🔵 Sign In clicked.');
-      if (!window.Pi) { log('❌ Pi SDK not present.'); return; }
-      if (!sdkReady) { log('⚠️ Please click "Init SDK" first.'); return; }
+</div>
 
-      try {
-        // tiny delay helps some sandbox sessions
-        await new Promise(r => setTimeout(r, 250));
+<!-- Stage for gift animations -->
+<div class="stage" id="stage"></div>
+<div class="toast" id="toast"></div>
 
-        const scopes = ['username']; // username only
-        log('⏳ Calling Pi.authenticate (username)…');
+<!-- (Optional) Pi SDK kept for future; not required for this demo -->
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+/*** STATE ***/
+const S = {
+  regular: 300,     // starter coins for demo
+  ad: 0,
+  spentOnGifts: 0,  // used for leveling
+  adsToday: 0,
+  lastAdDate: null,
+  comboTimer: null,
+  holdTimer: null,
+  sending: null
+};
+const EL = {
+  screens: {
+    home: document.getElementById('scrHome'),
+    gifts: document.getElementById('scrGifts'),
+    wallet: document.getElementById('scrWallet'),
+    profile: document.getElementById('scrProfile')
+  },
+  balance: document.getElementById('balance'),
+  cRegular: document.getElementById('cRegular'),
+  cAd: document.getElementById('cAd'),
+  adInfo: document.getElementById('adInfo'),
+  btnTopup: document.getElementById('btnTopup'),
+  btnWatchAd: document.getElementById('btnWatchAd'),
+  level: document.getElementById('level'),
+  lvBar: document.getElementById('lvBar'),
+  lvPct: document.getElementById('lvPct'),
+  lvHint: document.getElementById('lvHint'),
+  stage: document.getElementById('stage'),
+  toast: document.getElementById('toast'),
+  gridCommon: document.getElementById('gridCommon'),
+  gridRare: document.getElementById('gridRare'),
+  gridBillion: document.getElementById('gridBillion')
+};
 
-        let timeoutHit = false;
-        const timer = setTimeout(()=>{
-          timeoutHit = true;
-          log('⏱ No auth sheet after 10s.');
-          log('👉 Fixes: (1) Re-enter Sandbox code in Pi App → Utilities; (2) Force-close & reopen Pi Browser; (3) Pi Browser → Settings → Clear Cache; (4) Try "Test UI Popup".');
-        }, 10000);
+/*** UTIL ***/
+const fmt = n => n.toLocaleString();
+function save(){
+  localStorage.setItem('buzz_demo', JSON.stringify({
+    regular:S.regular, ad:S.ad, spentOnGifts:S.spentOnGifts,
+    adsToday:S.adsToday, lastAdDate:S.lastAdDate
+  }));
+}
+function load(){
+  const raw = localStorage.getItem('buzz_demo');
+  if(!raw) return;
+  try{
+    const d = JSON.parse(raw);
+    Object.assign(S, d);
+  }catch(_){}
+}
+function toast(msg, ms=1400){
+  EL.toast.textContent = msg;
+  EL.toast.classList.add('show');
+  setTimeout(()=>EL.toast.classList.remove('show'), ms);
+}
+function updateUI(){
+  EL.balance.textContent = fmt(S.regular + S.ad);
+  EL.cRegular.textContent = fmt(S.regular);
+  EL.cAd.textContent = fmt(S.ad);
 
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        if (!timeoutHit) clearTimeout(timer);
+  // Ad info
+  const today = new Date().toISOString().slice(0,10);
+  if(S.lastAdDate !== today){ S.adsToday = 0; S.lastAdDate = today; save(); }
+  EL.adInfo.textContent = `Ads watched today: ${S.adsToday}/5`;
 
-        log('✅ Auth success → user:', JSON.stringify(auth?.user));
-      } catch (e) {
-        log('❌ Auth error:', e?.message || e);
-      }
-    });
+  // Level
+  const perLevel = 500; // 500 coins spent == +1 level (=$50 since 10 coins = $1)
+  let lvl = Math.min(99, Math.floor(S.spentOnGifts / perLevel) + 1);
+  const into = S.spentOnGifts % perLevel;
+  const pct = Math.min(100, Math.round((into / perLevel)*100));
+  EL.level.textContent = lvl;
+  EL.lvPct.textContent = pct + '%';
+  EL.lvBar.style.width = pct + '%';
+  EL.lvHint.textContent = `${fmt(perLevel-into)} coins to Level ${Math.min(99, lvl+1)}`;
+}
+function spendCoins(amount){
+  let avail = S.regular + S.ad;
+  if(amount > avail) return false;
+  // Use ad coins first (gifting only rule)
+  let useAd = Math.min(S.ad, amount);
+  S.ad -= useAd;
+  let remaining = amount - useAd;
+  if(remaining>0) S.regular -= remaining;
+  S.spentOnGifts += amount;
+  save(); updateUI();
+  return true;
+}
 
-    btnCheck.addEventListener('click', () => {
-      const has = typeof window.Pi !== 'undefined';
-      log(`🧪 SDK present: ${has}`);
-      if (!has) return;
-      const keys = Object.keys(Pi||{}).sort();
-      log('🔧 SDK keys:', keys.join(', '));
-      log('🔍 typeof Pi.authenticate =', typeof Pi.authenticate);
-      log('🔍 typeof Pi.createPayment =', typeof Pi.createPayment);
-      log('🔍 typeof Pi.openShareDialog =', typeof Pi.openShareDialog);
-    });
+/*** GIFT DATA ***/
+const gifts = {
+  common: [
+    {emoji:'🥳',name:'Party',price:1},{emoji:'🥰',name:'Hearts',price:1},{emoji:'😍',name:'Love',price:1},{emoji:'😋',name:'Yum',price:1},
+    {emoji:'🤗',name:'Hug',price:1},{emoji:'🤩',name:'Starry',price:1},{emoji:'🤑',name:'Cashy',price:1},
+    {emoji:'🍭',name:'Lollipop',price:2},{emoji:'🍬',name:'Candy',price:2},{emoji:'🍫',name:'Chocolate',price:2},
+    {emoji:'🍸',name:'Cocktail',price:5},{emoji:'🍎',name:'Apple',price:5},{emoji:'🍺',name:'Beer',price:5},
+    {emoji:'🌹',name:'Rose',price:10},{emoji:'🌸',name:'Blossom',price:10},{emoji:'✨',name:'Sparkle',price:10},
+    {emoji:'💐',name:'Bouquet',price:20},{emoji:'🍻',name:'Cheers',price:20},{emoji:'👏',name:'Clap',price:20},{emoji:'💋',name:'Kiss',price:20},
+  ],
+  rare: [
+    {emoji:'🦋',name:'Butterfly',price:50},{emoji:'🌩',name:'Storm',price:50},{emoji:'🌤',name:'Sunrise',price:50},{emoji:'🌈',name:'Rainbow',price:50},{emoji:'❄️',name:'Snow',price:50},
+    {emoji:'🧸',name:'Teddy',price:100},{emoji:'🐇',name:'Bunny',price:100},{emoji:'🍾',name:'Champagne',price:100},{emoji:'👑',name:'Crown',price:100},{emoji:'🍷',name:'Wine',price:100},{emoji:'🥂',name:'Toast',price:100},
+    // 500 tier (styled labels)
+    {emoji:'🏎️',name:'Jade Lamborghini',price:500},{emoji:'✈️',name:'Crystal Aeroplane',price:500},{emoji:'🚙',name:'Golden Hummer',price:500},{emoji:'🛥️',name:'Yacht',price:500},
+  ],
+  billionaire: [
+    {emoji:'🔥🕊️',name:'Fiery Phoenix',price:1000},{emoji:'🦄',name:'Racing Unicorn',price:1000},{emoji:'🏰',name:'Crystal Castle',price:1000},{emoji:'💰',name:'Treasure Chest',price:1000},
+    {emoji:'🏯☁️',name:'Mansion in the Sky',price:5000},{emoji:'🧜‍♀️',name:'Mermaid',price:5000},{emoji:'💘',name:'Cupids',price:5000},{emoji:'🧝‍♀️',name:'Elf Queen',price:5000},
+    {emoji:'🛩️✨',name:'Golden Private Jet',price:10000},{emoji:'💎⌚',name:'Diamond Rolex',price:10000},{emoji:'🐎🚗',name:'Chariots of Horses',price:10000},
+  ]
+};
 
-    btnPopup.addEventListener('click', async () => {
-      if (!window.Pi) { log('❌ Pi SDK not present.'); return; }
-      try {
-        log('🪟 Opening test popup…');
-        await Pi.openShareDialog({ title: "BuzzPi", text: "UI test – if you see a sheet, popups work." });
-        log('✅ Popup displayed (UI channel OK).');
-      } catch (e) {
-        log('❌ Popup error (UI channel blocked?):', e?.message || e);
-        log('👉 Try force-closing Pi Browser, re-arming Sandbox, or clearing Pi Browser cache.');
-      }
-    });
+/*** RENDER GIFTS ***/
+function giftEl(g){ 
+  const el = document.createElement('div');
+  el.className='gift';
+  el.dataset.price = g.price;
+  el.dataset.name = g.name;
+  el.innerHTML = `<div class="emo">${g.emoji}</div><div class="name">${g.name}</div><div class="price">${fmt(g.price)}🪙</div>`;
+  return el;
+}
+function mountGifts(){
+  gifts.common.forEach(g=>EL.gridCommon.appendChild(giftEl(g)));
+  gifts.rare.forEach(g=>{ const el=giftEl(g); el.dataset.tier='rare'; EL.gridRare.appendChild(el); });
+  gifts.billionaire.forEach(g=>{ const el=giftEl(g); el.dataset.tier='billionaire'; EL.gridBillion.appendChild(el); });
+}
 
-    function onIncompletePaymentFound(payment){
-      log('ℹ️ Incomplete payment found:', JSON.stringify(payment));
-    }
-  </script>
-</body>
-</html>
+/*** GIFT SEND + COMBO ***/
+function animateGift(emoji){
+  const p = document.createElement('div'); p.className='pop'; p.textContent = emoji;
+  EL.stage.appendChild(p);
+  // sparks
+  for(let i=0;i<12;i++){
+    const s = document.createElement('div'); s.className='spark';
+    const dx = ((Math.random()*2-1)*140)|0;
+    const dy = (-60 - Math.random()*120)|0;
+    s.style.setProperty('--dx', dx+'px'); s.style.setProperty('--dy', dy+'px');
+    const x = window.innerWidth/2 + (Math.random()*40-20);
+    const y = window.innerHeight/2 + (Math.random()*20-10);
+    s.style.left = x+'px'; s.style.top=y+'px';
+    EL.stage.appendChild(s);
+    setTimeout(()=>s.remove(),800);
+  }
+  setTimeout(()=>p.remove(),600);
+}
+function showCombo(n){
+  const c = document.createElement('div'); c.className='combo'; c.textContent='Combo x'+n;
+  document.body.appendChild(c); setTimeout(()=>c.remove(),600);
+}
+function sendOne(emoji, price){
+  if(!spendCoins(price)){ toast('Not enough BuzzCoins'); return false; }
+  animateGift(emoji); return true;
+}
+function bindGifting(){
+  let combo=0, interval=null, pressing=false;
+  function startHold(el){
+    pressing=true; combo=0;
+    const price = +el.dataset.price; const emoji = el.querySelector('.emo').textContent;
+    // first send immediately
+    if(sendOne(emoji, price)){ combo=1; showCombo(combo); }
+    // then repeat while held
+    interval = setInterval(()=>{
+      if(sendOne(emoji, price)){ combo++; if(combo%2===0) showCombo(combo); } else { stopHold(); }
+    }, 180);
+  }
+  function stopHold(){ pressing=false; if(interval){ clearInterval(interval); interval=null; } }
+  // delegate
+  document.addEventListener('pointerdown', e=>{
+    const el = e.target.closest('.gift'); if(!el) return;
+    S.holdTimer = setTimeout(()=>startHold(el), 180);
+  });
+  document.addEventListener('pointerup', e=>{
+    clearTimeout(S.holdTimer);
+    // If short tap (no interval yet), treat as single send
+    const el = e.target.closest('.gift'); if(!el) return;
+    if(!pressing){
+      const price = +el.dataset.price; const
