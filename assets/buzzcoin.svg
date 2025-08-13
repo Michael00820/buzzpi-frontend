@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BuzzCoin">
+  <defs>
+    <!-- Coin body gradient -->
+    <radialGradient id="gCoin" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(40 32) rotate(45) scale(120)">
+      <stop offset="0" stop-color="#FFD36A"/>
+      <stop offset="0.55" stop-color="#FFC046"/>
+      <stop offset="1" stop-color="#E39821"/>
+    </radialGradient>
+
+    <!-- Rim shine -->
+    <linearGradient id="gRim" x1="16" y1="16" x2="112" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7E2B2" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#C87C1A" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Inner shadow -->
+    <radialGradient id="gInner" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(64 64) rotate(90) scale(64)">
+      <stop offset="0.75" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Coin base -->
+  <circle cx="64" cy="64" r="56" fill="url(#gCoin)"/>
+  <!-- Rim -->
+  <circle cx="64" cy="64" r="56" fill="none" stroke="url(#gRim)" stroke-width="6"/>
+  <!-- Soft inner vignette -->
+  <circle cx="64" cy="64" r="56" fill="url(#gInner)"/>
+
+  <!-- The “1” symbol (vector path, no fonts needed) -->
+  <!-- This draws a rounded ‘1’ so it works everywhere -->
+  <path d="M67 30c0-2.2-1.8-4-4-4s-4 1.8-4 4v12.4c0 1.1-.9 2-2 2h-4c-2.2 0-4 1.8-4 4v2.2c0 2.2 1.8 4 4 4h4c1.1 0 2 .9 2 2V92c0 4.4 3.6 8 8 8s8-3.6 8-8V34c0-2.2-1.8-4-4-4Z"
+        fill="#71460A" opacity="0.95"/>
+  <!-- Subtle highlight on the “1” -->
+  <path d="M59 36c0-1.66 1.34-3 3-3h0c1.66 0 3 1.34 3 3v58c0 1.66-1.34 3-3 3h0c-1.66 0-3-1.34-3-3V36Z"
+        fill="#9A6216" opacity="0.35"/>
+</svg>
