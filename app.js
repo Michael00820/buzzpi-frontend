@@ -444,6 +444,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 })();
+
+// --- DEV switch via ?dev=1 in the URL ---
+(function () {
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("dev") === "1") {
+    const show = () => {
+      const tools = document.getElementById("piTools");
+      if (tools) tools.classList.remove("hidden");
+    };
+    // show tools asap
+    document.addEventListener("DOMContentLoaded", show);
+
+    // optional: auto init + sign in (username scope) when dev=1
+    // uncomment if you want it to run automatically:
+    // setTimeout(async () => {
+    //   try {
+    //     await (window.tryInit ? window.tryInit() : null);
+    //     await (window.trySignIn ? window.trySignIn() : null);
+    //   } catch (e) { console.log(e); }
+    // }, 400);
+  }
+})();
   // ---------- Initial ----------
   showPage("feedPage");
 });
