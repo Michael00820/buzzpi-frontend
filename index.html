@@ -1,43 +1,146 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>BuzzPi</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#0b0b0f" />
+  <link rel="stylesheet" href="/app.css" />
+  <link rel="icon" href="/assets/buzzcoin.svg" />
+  <style>
+    /* Tiny defensive styles so the page isn’t broken if app.css is cached/missing */
+    :root { color-scheme: dark; }
+    body { margin: 0; background:#0b0b0f; color:#eee; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .sr-only{position:absolute!important;left:-9999px!important;top:auto!important}
+    .route{display:none}
+    .route.route-active{display:block}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(180deg,#0f0f16 0%, #0b0b0f 100%);border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{font-weight:800;font-size:22px;letter-spacing:.2px}
+    .balance{display:flex;gap:8px;align-items:center;font-weight:700}
+    .balance img{width:22px;height:22px}
+    .tabs{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .chip{padding:10px 16px;border-radius:16px;background:#1a1a22;color:#aaa}
+    .chip.active{background:#4f3bf3;color:#fff;box-shadow:0 0 0 2px rgba(79,59,243,.35) inset}
+    .content{padding:18px 16px 120px}
+    .h1{font-size:36px;font-weight:800;margin:8px 0 8px}
+    .muted{color:#a9afbe}
+    .sound-toggle{position:fixed;right:16px;bottom:110px;z-index:60;background:#1b1b22;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+    .sound-toggle .label{font-weight:700}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(13,13,18,.92);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.06);padding:12px 14px 16px;z-index:40}
+    .nav-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:900px;margin:0 auto}
+    .nav-btn{display:flex;flex-direction:column;align-items:center;gap:8px;background:#16161d;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:10px 6px 12px;color:#cfd5e5}
+    .nav-btn .ico{font-size:20px}
+    .nav-btn.active{outline:2px solid rgba(79,59,243,.45)}
+    .fab{position:fixed;left:50%;transform:translate(-50%, 0);bottom:54px;width:124px;height:124px;border-radius:999px;border:none;background:transparent;z-index:55;display:grid;place-items:center;pointer-events:auto}
+    .fab .ring{position:absolute;inset:0;border-radius:inherit;background:radial-gradient(60% 60% at 50% 50%, rgba(255,198,140,.6) 0%, rgba(228,125,77,.25) 55%, rgba(0,0,0,.0) 70%);filter:blur(10px);opacity:.95}
+    .fab .pot{width:86px;height:86px;border-radius:22px;background:#1a0f08;box-shadow:inset 0 0 12px rgba(255,183,76,.25), 0 12px 36px rgba(0,0,0,.55);position:relative;display:grid;place-items:center}
+    .fab .pot::before{content:"";width:72px;height:72px;display:block;background:url('/assets/buzzcoin.svg') center/contain no-repeat;filter:drop-shadow(0 4px 10px rgba(255,180,60,.35))}
+    #fx-layer{position:fixed;inset:0;pointer-events:none;z-index:70}
+    @supports (padding: env(safe-area-inset-bottom)){
+      .bottom-nav{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+      .fab{bottom:calc(54px + env(safe-area-inset-bottom));}
+      .sound-toggle{bottom:calc(110px + env(safe-area-inset-bottom));}
+    }
+  </style>
 </head>
 <body>
+  <div id="app">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">BuzzPi</div>
+      <div class="balance" aria-live="polite">
+        <img src="/assets/buzzcoin.svg" alt="BuzzCoin" />
+        <span id="balanceText">0</span>
+      </div>
+    </header>
 
-  <!-- Top Bar -->
-  <header class="top-bar">
-    <h1>BuzzPi</h1>
-    <div class="balance">
-      <img id="bzIcon" src="/assets/buzzcoin.svg" alt="BuzzCoin" width="22" height="22"
-           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?><svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 128 128&quot;><defs><linearGradient id=&quot;g&quot; x1=&quot;14%&quot; y1=&quot;6%&quot; x2=&quot;86%&quot; y2=&quot;94%&quot;><stop offset=&quot;0%&quot; stop-color=&quot;%23FFE39A&quot;/><stop offset=&quot;55%&quot; stop-color=&quot;%23F7B25F&quot;/><stop offset=&quot;100%&quot; stop-color=&quot;%23C6712C&quot;/></linearGradient></defs><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;58&quot; fill=&quot;url(%23g)&quot;/><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;58&quot; fill=&quot;none&quot; stroke=&quot;rgba(255,255,255,.35)&quot; stroke-width=&quot;2&quot;/><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;52&quot; fill=&quot;none&quot; stroke=&quot;rgba(0,0,0,.15)&quot; stroke-width=&quot;2&quot;/><path d=&quot;M72 86c0 4.4-3.6 8-8 8s-8-3.6-8-8V46.5l-3.6 2.8c-3.5 2.8-8.6 2.2-11.4-1.3-2.8-3.5-2.2-8.6 1.3-11.4l12.7-10c2.2-1.7 5-2.7 7.8-2.7 7 0 12.7 5.7 12.7 12.7V86z&quot; fill=&quot;%236D430F&quot; opacity=&quot;.92&quot;/></svg>';">
-      <span id="balanceAmt">0</span>
-    </div>
-  </header>
+    <!-- Feed tabs -->
+    <nav class="tabs" aria-label="Feed filters">
+      <button class="chip active" data-feed="following" id="tab-following">Following</button>
+      <button class="chip" data-feed="popular" id="tab-popular">Popular</button>
+      <button class="chip" data-feed="nearby" id="tab-nearby">Nearby</button>
+      <button class="chip" data-feed="new" id="tab-new">New</button>
+    </nav>
 
-  <!-- Feed -->
-  <main>
-    <h2>Feed</h2>
-    <p>Following feed placeholder.</p>
-  </main>
+    <!-- Routes -->
+    <main id="route-home" class="route route-active" role="main" aria-labelledby="homeTitle">
+      <section class="content">
+        <h1 id="homeTitle" class="h1">Feed</h1>
+        <p class="muted" id="feedHint">Following feed placeholder.</p>
+        <!-- future feed items injected here -->
+        <div id="feed"></div>
+      </section>
+    </main>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="#" class="nav-btn">🏠<span>Home</span></a>
-    <a href="#" class="nav-btn">🎁<span>Gifts</span></a>
+    <main id="route-gifts" class="route" role="main" aria-labelledby="giftsTitle">
+      <section class="content">
+        <h1 id="giftsTitle" class="h1">Gifts</h1>
+        <div id="gifts-root"><p class="muted">Gift panel loads here.</p></div>
+      </section>
+    </main>
 
-    <!-- Floating Coin Button -->
-    <div class="fab">
-      <div class="pot"></div>
-    </div>
+    <main id="route-wallet" class="route" role="main" aria-labelledby="walletTitle">
+      <section class="content">
+        <h1 id="walletTitle" class="h1">Wallet</h1>
+        <div class="card muted" style="background:#121219;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;margin-bottom:12px;">
+          This demo wallet only tracks local BuzzCoin for testing gifts.
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button id="devAdd100" class="chip" style="background:#29293a;color:#fff;border:none">Dev +100</button>
+          <button id="resetBalance" class="chip" style="background:#29293a;color:#fff;border:none">Reset balance</button>
+        </div>
+      </section>
+    </main>
 
-    <a href="#" class="nav-btn">💰<span>Wallet</span></a>
-    <a href="#" class="nav-btn">👤<span>Profile</span></a>
-  </nav>
+    <main id="route-profile" class="route" role="main" aria-labelledby="profileTitle">
+      <section class="content">
+        <h1 id="profileTitle" class="h1">Profile</h1>
+        <p class="muted">Profile placeholder.</p>
+      </section>
+    </main>
 
-  <script src="app.js"></script>
+    <!-- Sound toggle -->
+    <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">
+      <span class="icon" aria-hidden="true">🔊</span>
+      <span class="label">On</span>
+    </button>
+
+    <!-- Floating honeypot FAB (Go Live) -->
+    <button id="goLiveBtn" class="fab" type="button" aria-label="Start instant livestream">
+      <span class="ring" aria-hidden="true"></span>
+      <span class="pot" aria-hidden="true"></span>
+      <span class="sr-only">Go Live</span>
+    </button>
+
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav" role="navigation" aria-label="Primary">
+      <div class="nav-row">
+        <button class="nav-btn active" data-route="home" id="nav-home">
+          <div class="ico" aria-hidden="true">🏠</div>
+          <div class="txt">Home</div>
+        </button>
+        <button class="nav-btn" data-route="gifts" id="nav-gifts">
+          <div class="ico" aria-hidden="true">🎁</div>
+          <div class="txt">Gifts</div>
+        </button>
+        <button class="nav-btn" data-route="wallet" id="nav-wallet">
+          <div class="ico" aria-hidden="true">💰</div>
+          <div class="txt">Wallet</div>
+        </button>
+        <button class="nav-btn" data-route="profile" id="nav-profile">
+          <div class="ico" aria-hidden="true">👤</div>
+          <div class="txt">Profile</div>
+        </button>
+      </div>
+    </nav>
+
+    <!-- FX layer for billionaire gifts etc. -->
+    <div id="fx-layer" aria-hidden="true"></div>
+  </div>
+
+  <!-- App scripts -->
+  <script src="/app.js"></script>
+  <!-- Keep this AFTER app.js; it only adds the BuzzCoin icon fallback for the FAB -->
+  <script src="/fab-fallback.js"></script>
 </body>
 </html>
