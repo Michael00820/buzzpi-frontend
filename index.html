@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BuzzPi – Gift Lab (v14)</title>
+<title>BuzzPi – Gift Lab (v15)</title>
 <style>
   :root{
     --bg:#0f0f12; --fg:#e6e6ec; --muted:#9aa0a6; --brand:#7c4dff; --accent:#ffd166;
@@ -30,14 +30,12 @@
   .chip{padding:6px 12px;border-radius:14px;background:var(--card2);color:var(--muted);white-space:nowrap;border:1px solid rgba(255,255,255,.06)}
   .chip.active{background:var(--brand);color:white}
 
-  /* Screens */
   .screen{display:none;padding:16px}
   .screen.active{display:block}
   .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;margin-bottom:14px}
   .muted{color:var(--muted)}
   .small{font-size:.9rem}
 
-  /* Grid of gifts */
   .gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
   .gift{background:var(--card2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 4px;
         text-align:center;cursor:pointer;position:relative;user-select:none;transition:transform .12s ease, box-shadow .12s ease}
@@ -48,19 +46,17 @@
   .gift .name{font-size:.76rem;margin-top:4px;color:var(--muted)}
   .gift .price{position:absolute;right:6px;top:6px;background:#0009;color:#fff;padding:2px 6px;border-radius:10px;font-size:.7rem}
 
-  /* Overlay for animations */
   .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
   .fx-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 
-  /* Reusable effects */
   @keyframes confettiFall{0%{transform:translateY(-120vh) rotate(0deg)}100%{transform:translateY(120vh) rotate(720deg)}}
   @keyframes flutter{0%{transform:translate(-50%,-50%) rotate(0) scale(1)}50%{transform:translate(-30%,-65%) rotate(10deg) scale(1.2)}100%{transform:translate(60%,-40%) rotate(-5deg) scale(1)}}
+
   .shadow{filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
   .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
   .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-  /* Bottom nav */
   nav.bottom{
     position:fixed;inset:auto 0 0 0;height:82px;background:rgba(16,16,20,.85);backdrop-filter:blur(8px);
     border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-around;align-items:center;z-index:40
@@ -75,26 +71,34 @@
   }
   .honeypot .jar{font-size:34px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
   .honeypot:active{transform:translateX(-50%) scale(.98)}
-
-  /* Toast / console */
   .toast{position:fixed;left:50%;top:10px;transform:translateX(-50%);background:#111c;border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:10px;z-index:60}
   .toast.bad{background:#2b0d0d;color:#fff;border-color:#ff4d4d}
   .toast.ok{background:#0e2a1f;border-color:#34d399}
   .console{background:#000c;color:#d9e3ff;border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem}
   .link{color:#9abaff;text-decoration:underline;cursor:pointer}
 
-  /* SFX toggle */
+  /* SFX toggle — bottom-right, auto-hide (moved away from balance) */
   .sfxToggle{
-    position:fixed; right:14px; top:14px; z-index:10000;
-    width:42px; height:42px; border-radius:9999px;
-    background:#1f2937; color:#fff; border:1px solid #374151;
+    position:fixed;
+    right:14px;
+    bottom:calc(110px + env(safe-area-inset-bottom));
+    z-index:10000;
+    width:42px;height:42px;border-radius:9999px;
+    background:#1f2937cc; color:#fff; border:1px solid #374151;
     box-shadow:0 4px 16px rgba(0,0,0,.25);
+    opacity:0; transform:translateY(8px);
+    transition:opacity .25s ease, transform .25s ease;
   }
   .sfxToggle.on::after{content:'🔊';}
   .sfxToggle.off::after{content:'🔇';}
+  .sfxToggle.show{ opacity:1; transform:translateY(0); }
+  @media (prefers-color-scheme: light){
+    .sfxToggle{ background:#ffffffcc; color:#111; border-color:#e5e7eb; }
+  }
 </style>
 </head>
 <body>
+<!-- SFX toggle -->
 <button id="sfxToggle" class="sfxToggle" title="Sound Effects"></button>
 
 <div class="app">
@@ -120,7 +124,7 @@
     </div>
     <div class="card">
       <div style="font-weight:800;margin-bottom:8px">If anything looks cached</div>
-      <div class="muted small">Hard-refresh with <span class="link" id="forceReload">?v=<span id="vNum">14</span></span>.</div>
+      <div class="muted small">Hard-refresh with <span class="link" id="forceReload">?v=<span id="vNum">15</span></span>.</div>
     </div>
   </section>
 
@@ -180,17 +184,12 @@
   <nav class="bottom">
     <button class="nav-btn" data-target="scrHome"><div class="ico">🏠</div>Home</button>
     <button class="nav-btn" data-target="scrGifts"><div class="ico">🎁</div>Gifts</button>
-
-    <button class="honeypot" id="goLive" title="Go Live (mock)">
-      <div class="jar">🍯</div>
-    </button>
-
+    <button class="honeypot" id="goLive" title="Go Live (mock)"><div class="jar">🍯</div></button>
     <button class="nav-btn" data-target="scrWallet"><div class="ico">💰</div>Wallet</button>
     <button class="nav-btn" data-target="scrProfile"><div class="ico">👤</div>Profile</button>
   </nav>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast" style="display:none"></div>
 
 <!-- Inline Phoenix JSON (also fetched if effects/phoenix_rebirth.json exists) -->
@@ -213,7 +212,7 @@
 </script>
 
 <script>
-/* ----------------------- tiny helpers ----------------------- */
+/* ------------- helpers/state/UI ------------- */
 const $ = sel => document.querySelector(sel);
 const el = id => document.getElementById(id);
 const log = (...a)=>{ const L=el('log'); L.textContent = a.join(' '); L.scrollTop=L.scrollHeight; };
@@ -221,51 +220,22 @@ const toast = (msg,type='ok',ms=1800)=>{
   const t = el('toast'); t.className = 'toast '+type; t.textContent = msg; t.style.display='block';
   clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',ms);
 };
-
-/* ----------------------- state ----------------------- */
-const STATE = {
-  balance: 300,
-  ad: {max:5, cooldown:5, count:0, last:0},
-  holdTimer: null,
-  selectedGift: null,
-};
-
-const EL = {
-  screens: {
-    scrHome: el('scrHome'),
-    scrGifts: el('scrGifts'),
-    scrWallet: el('scrWallet'),
-    scrProfile: el('scrProfile'),
-  },
-  fx: el('fx'),
-  giftWrap: el('giftWrap'),
-  balance: el('balance')
-};
-
-/* ----------------------- null-safe screen switch ----------------------- */
+const STATE = { balance: 300, ad: {max:5, cooldown:5, count:0, last:0}, holdTimer: null, selectedGift: null };
+const EL = { screens:{ scrHome:el('scrHome'), scrGifts:el('scrGifts'), scrWallet:el('scrWallet'), scrProfile:el('scrProfile') }, fx:el('fx'), giftWrap:el('giftWrap'), balance:el('balance') };
 function show(id){
-  const screens = Object.values(EL.screens).filter(Boolean);
-  screens.forEach(s=>s.classList.remove('active'));
-  const target = EL.screens[id];
-  if (target) target.classList.add('active');
-  document.querySelectorAll('nav .nav-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.target===id);
-  });
+  Object.values(EL.screens).filter(Boolean).forEach(s=>s.classList.remove('active'));
+  EL.screens[id]?.classList.add('active');
+  document.querySelectorAll('nav .nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target===id));
 }
-document.querySelectorAll('nav .nav-btn').forEach(b=>{
-  b.addEventListener('click', ()=> show(b.dataset.target));
-});
+document.querySelectorAll('nav .nav-btn').forEach(b=> b.addEventListener('click', ()=> show(b.dataset.target)));
 el('forceReload')?.addEventListener('click', ()=>{
-  const v = Number(el('vNum').textContent||14)+1;
-  location.href = location.origin + '/?v='+v;
+  const v = Number(el('vNum').textContent||15)+1; location.href = location.origin + '/?v='+v;
 });
-
-/* ----------------------- balance ----------------------- */
 function fmt(n){ return n.toLocaleString(); }
 function updateBalance(){ EL.balance.textContent = fmt(STATE.balance); }
 updateBalance();
 
-/* ----------------------- gifts catalog ----------------------- */
+/* ------------- catalog/render ------------- */
 const CATALOG = {
   common: [
     {id:'party', emo:'🥳', name:'Party', price:1},
@@ -320,61 +290,42 @@ const CATALOG = {
     {id:'chariots', emo:'🐎', name:'Chariots of Horses', price:10000},
   ]
 };
-
-/* ----------------------- render catalog ----------------------- */
 function renderCategory(cat){
-  const wrap = document.createElement('div');
-  wrap.className='gift-grid';
+  const wrap = document.createElement('div'); wrap.className='gift-grid';
   CATALOG[cat].forEach(g=>{
     const d=document.createElement('div');
-    d.className='gift';
-    d.dataset.id=g.id; d.dataset.price=g.price; d.dataset.cat=cat;
+    d.className='gift'; d.dataset.id=g.id; d.dataset.price=g.price; d.dataset.cat=cat;
     d.innerHTML=`<div class="emo">${g.emo}</div><div class="name">${g.name}</div><div class="price">${g.price}</div>`;
-    // select highlight
     d.addEventListener('click', ()=>{
       document.querySelectorAll('.gift').forEach(x=>x.classList.remove('selected'));
-      d.classList.add('selected');
-      STATE.selectedGift = g;
-      sendGift(g); // single tap sends once
+      d.classList.add('selected'); STATE.selectedGift = g; sendGift(g);
     });
-    // long press for combo
     let pressT;
     d.addEventListener('pointerdown', ()=>{
-      pressT=setTimeout(()=>{ // start auto send after 350ms hold
-        STATE.holdTimer=setInterval(()=> sendGift(g,true), 280);
-      }, 350);
+      pressT=setTimeout(()=>{ STATE.holdTimer=setInterval(()=> sendGift(g,true), 280); }, 350);
     });
     const stopHold=()=>{ clearTimeout(pressT); if(STATE.holdTimer){clearInterval(STATE.holdTimer); STATE.holdTimer=null;} };
     d.addEventListener('pointerup',stopHold); d.addEventListener('pointerleave',stopHold); d.addEventListener('pointercancel',stopHold);
     wrap.appendChild(d);
   });
-  EL.giftWrap.innerHTML='';
-  EL.giftWrap.appendChild(wrap);
+  EL.giftWrap.innerHTML=''; EL.giftWrap.appendChild(wrap);
 }
 renderCategory('common');
-
 el('giftTabs').addEventListener('click', (e)=>{
   const chip = e.target.closest('.chip'); if(!chip) return;
   el('giftTabs').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  chip.classList.add('active');
-  renderCategory(chip.dataset.cat);
+  chip.classList.add('active'); renderCategory(chip.dataset.cat);
 });
 
-/* ----------------------- ads (1 coin, max 5/day, 5s cooldown) ----------------------- */
+/* ------------- ads/dev wallet ------------- */
 function todayKey(){ const d=new Date(); return `ad-${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-function loadAdState(){
-  const k=todayKey(); const obj=JSON.parse(localStorage.getItem(k)||'{"count":0,"last":0}');
-  STATE.ad.count=obj.count||0; STATE.ad.last=obj.last||0;
-}
-function saveAdState(){
-  const k=todayKey(); localStorage.setItem(k, JSON.stringify({count:STATE.ad.count,last:STATE.ad.last}));
-}
+function loadAdState(){ const k=todayKey(); const obj=JSON.parse(localStorage.getItem(k)||'{"count":0,"last":0}'); STATE.ad.count=obj.count||0; STATE.ad.last=obj.last||0; }
+function saveAdState(){ const k=todayKey(); localStorage.setItem(k, JSON.stringify({count:STATE.ad.count,last:STATE.ad.last})); }
 loadAdState();
-
 el('watchAd').addEventListener('click', ()=>{
   const now=Date.now()/1000;
-  if(STATE.ad.count>=STATE.ad.max){ toast("Daily ad limit reached (5).", "bad"); return; }
-  if(now-STATE.ad.last<STATE.ad.cooldown){ toast(`Please wait ${Math.ceil(STATE.ad.cooldown-(now-STATE.ad.last))}s…`,"warn"); return; }
+  if(STATE.ad.count>=5){ toast("Daily ad limit reached (5).", "bad"); return; }
+  if(now-STATE.ad.last<5){ toast(`Please wait ${Math.ceil(5-(now-STATE.ad.last))}s…`,"warn"); return; }
   toast("Playing ad… (+1)", "ok", 1200);
   STATE.ad.last=now; STATE.ad.count++; saveAdState();
   setTimeout(()=>{ STATE.balance+=1; updateBalance(); toast("1 BuzzCoin added!","ok"); }, 500);
@@ -383,26 +334,23 @@ el('devAdd').addEventListener('click', ()=>{ STATE.balance+=50; updateBalance();
 el('devAdd100').addEventListener('click', ()=>{ STATE.balance+=100; updateBalance(); toast("+100","ok"); });
 el('devReset').addEventListener('click', ()=>{ STATE.balance=0; updateBalance(); toast("Balance reset","warn"); });
 
-/* ----------------------- spend & send ----------------------- */
-function spend(n){
-  if(STATE.balance<n){ toast("Not enough BuzzCoin","bad"); return false; }
-  STATE.balance-=n; updateBalance(); return true;
-}
+/* ------------- spend/send ------------- */
+function spend(n){ if(STATE.balance<n){ toast("Not enough BuzzCoin","bad"); return false; } STATE.balance-=n; updateBalance(); return true; }
 function sendGift(g, combo=false){
   if(!spend(g.price)) return;
   animateGift(g, combo);
   log(`Sent ${g.name} (−${g.price}). Balance ${STATE.balance}.`);
+  // re-peek SFX button after each send
+  showSfxTemporarily(2000);
 }
+window.sendGift = sendGift; // for toggle auto-hide hook
 
-/* ----------------------- FX primitives ----------------------- */
+/* ------------- FX primitives ------------- */
 function addFx(html, opts={}){
-  const n=document.createElement('div'); n.className='fx-item shadow';
-  n.innerHTML=html;
+  const n=document.createElement('div'); n.className='fx-item shadow'; n.innerHTML=html;
   if(opts.style) Object.assign(n.style, opts.style);
   EL.fx.appendChild(n);
-  const kill=()=>n.remove();
-  const ms = (opts.ms??5000);
-  setTimeout(kill, ms);
+  setTimeout(()=>n.remove(), (opts.ms??5000));
   return n;
 }
 function lensTint(color='rgba(255,180,80,.25)', ms=800){
@@ -417,14 +365,14 @@ function confetti(ms=1200){
   }
 }
 
-/* ----------------------- SFX: tiny WebAudio engine + toggle ----------------------- */
+/* ------------- SFX engine + toggle (bottom-right, auto-hide) ------------- */
 const SFX = (() => {
   let enabled = localStorage.getItem('buzz_sfx') !== 'off';
   const Ctx = window.AudioContext || window.webkitAudioContext;
   const ctx = new Ctx();
   const master = ctx.createGain(); master.gain.value = 0.35; master.connect(ctx.destination);
   function resume(){ if (ctx.state === 'suspended') ctx.resume(); }
-  window.addEventListener('pointerdown', () => resume(), {once:true});
+  window.addEventListener('pointerdown', () => { resume(); showSfxTemporarily(2500); }, {once:true});
 
   function chain(gain=0.22){ const g=ctx.createGain(); g.gain.value=gain; g.connect(master); return g; }
   function osc(f, dur, type='sine', g=0.22){
@@ -460,8 +408,6 @@ const SFX = (() => {
     gallop(){ for(let i=0;i<6;i++) setTimeout(()=>api.impact(), i*220); },
     twinkle(){ [1800,2200,2600].forEach((f,i)=>setTimeout(()=>osc(f,0.08,'sine',0.18), i*80)); },
     chime(){ [1200,1800,2400].forEach((f,i)=>setTimeout(()=>osc(f,0.18,'triangle',0.22), i*90)); },
-
-    /* common/rare extras */
     pop(){ osc(520,0.05,'sine',0.22); osc(260,0.07,'sine',0.16); },
     sparkle(){ api.twinkle(); },
     kiss(){ osc(1500,0.12,'sine',0.22); noise(0.10,'white',0.08,2800); },
@@ -475,43 +421,54 @@ const SFX = (() => {
     cork(){ api.impact(); setTimeout(()=>api.whoosh(),90); },
     bell(){ osc(1300,0.28,'triangle',0.20); osc(650,0.36,'sine',0.12); }
   };
-  // toggle button paint
+
+  /* toggle button paint + auto-hide */
   const btn = document.getElementById('sfxToggle');
+  let sfxHideTimer = null;
+  window.showSfxTemporarily = function(ms=3000){
+    if(!btn) return;
+    btn.classList.add('show');
+    clearTimeout(sfxHideTimer);
+    sfxHideTimer = setTimeout(()=>btn.classList.remove('show'), ms);
+  };
   if (btn){
     const paint = () => { btn.classList.toggle('on', api.enabled()); btn.classList.toggle('off', !api.enabled()); };
-    paint(); btn.addEventListener('click', ()=>{ api.toggle(); paint(); });
+    paint();
+    btn.addEventListener('click', ()=>{ api.toggle(); paint(); showSfxTemporarily(2500); });
+
+    // Reappear briefly on user activity
+    ['pointermove','pointerdown','keydown','visibilitychange'].forEach(evt=>{
+      window.addEventListener(evt, ()=>showSfxTemporarily(2000));
+    });
+
+    // Initial peek
+    setTimeout(()=>showSfxTemporarily(2200), 500);
   }
   return api;
 })();
 
-/* ----------------------- Phoenix loader + interpreter ----------------------- */
-const VERSION = 14;
+/* ------------- Phoenix loader + interpreter ------------- */
+const VERSION = 15;
 const EFFECT_CACHE = {};
 async function loadEffectJson(name){
   if (EFFECT_CACHE[name]) return EFFECT_CACHE[name];
   try{
     const r = await fetch(`/effects/${name}.json?v=${VERSION}`);
     if (!r.ok) throw 0;
-    const j = await r.json();
-    EFFECT_CACHE[name] = j;
-    return j;
+    const j = await r.json(); EFFECT_CACHE[name] = j; return j;
   }catch(e){
-    // fallback to inline
     const tag = document.getElementById('phoenix-config');
     return tag ? JSON.parse(tag.textContent) : null;
   }
 }
 function runPhoenix(script){
   if (!script) return;
-  const beats = script.beats || [];
-  const disposers = [];
-  const at = (ms, fn) => disposers.push(setTimeout(fn, ms));
-
+  const beats = script.beats || []; const timers=[];
+  const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
   function doActions(list){
     list.forEach(a=>{
       if (a.startsWith('sfx:')){
-        const k = a.slice(4);
-        if (k==='whoosh_in') SFX.whoosh();
+        const k=a.slice(4); if (k==='whoosh_in') SFX.whoosh();
         else if (k==='impact') SFX.impact();
         else if (k==='choir_hit') SFX.choir();
         else if (k==='rumble_in') SFX.rumble(900);
@@ -543,73 +500,26 @@ function runPhoenix(script){
       }
     });
   }
-  beats.forEach(b => at(b.t, () => doActions(b.actions || [])));
-  at(script.duration || 8000, () => disposers.forEach(clearTimeout));
+  beats.forEach(b=>at(b.t,()=>doActions(b.actions||[])));
+  at(script.duration||8000, ()=>timers.forEach(clearTimeout));
 }
 
-/* ----------------------- SFX mapping for small gifts ----------------------- */
+/* ------------- subtle SFX mapper (common/rare) ------------- */
 function sfxForGift(g){
-  const e = g.emo;
-  const p = g.price || 1;
-
-  if (p === 1){
-    if (e === '🥳') return SFX.pop();
-    if (e === '😋') return (SFX.pop(), SFX.sparkle());
-    if (e === '🥰' || e === '😍') return SFX.sparkle();
-    if (e === '🤗') return SFX.pop();
-    if (e === '🤩') return SFX.sparkle();
-    if (e === '🤑') return SFX.coins();
-    return SFX.pop();
-  }
-  if (p === 2){
-    if (['🍭','🍬','🍫'].includes(e)) return (SFX.pop(), SFX.chime());
-    return SFX.pop();
-  }
-  if (p === 5){
-    if (e === '🍸') return (SFX.pour(), SFX.chime());
-    if (e === '🍺') return SFX.pour();
-    if (e === '🍎') return SFX.pop();
-    return SFX.pop();
-  }
-  if (p === 10){
-    if (e === '🌹' || e === '🌸' || e === '✨️') return (SFX.chime(), SFX.sparkle());
-    return SFX.chime();
-  }
-  if (p === 20){
-    if (e === '💐') return (SFX.chime(), SFX.sparkle());
-    if (e === '🍻') return SFX.cheers();
-    if (e === '👏') return SFX.clap2();
-    if (e === '💋') return SFX.kiss();
-    return SFX.chime();
-  }
-  if (p === 50){
-    if (e === '🦋') return SFX.twinkle();
-    if (e === '🌩') return SFX.thunder();
-    if (e === '🌤') return SFX.wind();
-    if (e === '🌈') return SFX.twinkle();
-    if (e === '❄️') return SFX.snow();
-    return SFX.twinkle();
-  }
-  if (p === 100){
-    if (e === '🧸') return SFX.pop();
-    if (e === '🐇') return SFX.whoosh();
-    if (e === '🍾') return (SFX.cork(), SFX.fizz());
-    if (e === '👑') return SFX.chime();
-    if (e === '🍷' || e === '🥂') return (SFX.pour(), SFX.cheers());
-    return SFX.chime();
-  }
-  if (p === 500){
-    if (g.id?.includes('lamb') || g.id?.includes('car')) return SFX.engineRev();
-    if (g.id?.includes('plane')) return SFX.jet();
-    if (g.id?.includes('yacht') || e === '🛥️') return (SFX.wind(), SFX.whoosh());
-    return SFX.whoosh();
-  }
+  const e = g.emo, p = g.price || 1;
+  if (p === 1){ if (e==='🥳') return SFX.pop(); if (e==='😋') return (SFX.pop(),SFX.sparkle()); if (e==='🥰'||e==='😍') return SFX.sparkle(); if (e==='🤗') return SFX.pop(); if (e==='🤩') return SFX.sparkle(); if (e==='🤑') return SFX.coins(); return SFX.pop(); }
+  if (p === 2){ if (['🍭','🍬','🍫'].includes(e)) return (SFX.pop(),SFX.chime()); return SFX.pop(); }
+  if (p === 5){ if (e==='🍸') return (SFX.pour(),SFX.chime()); if (e==='🍺') return SFX.pour(); if (e==='🍎') return SFX.pop(); return SFX.pop(); }
+  if (p === 10){ if (['🌹','🌸','✨️','✨'].includes(e)) return (SFX.chime(),SFX.sparkle()); return SFX.chime(); }
+  if (p === 20){ if (e==='💐') return (SFX.chime(),SFX.sparkle()); if (e==='🍻') return SFX.cheers(); if (e==='👏') return SFX.clap2(); if (e==='💋') return SFX.kiss(); return SFX.chime(); }
+  if (p === 50){ if (e==='🦋') return SFX.twinkle(); if (e==='🌩') return SFX.thunder(); if (e==='🌤') return SFX.wind(); if (e==='🌈') return SFX.twinkle(); if (e==='❄️') return SFX.snow(); return SFX.twinkle(); }
+  if (p === 100){ if (e==='🧸') return SFX.pop(); if (e==='🐇') return SFX.whoosh(); if (e==='🍾') return (SFX.cork(),SFX.fizz()); if (e==='👑') return SFX.chime(); if (e==='🍷'||e==='🥂') return (SFX.pour(),SFX.cheers()); return SFX.chime(); }
+  if (p === 500){ if (g.id?.includes('Lambo')||g.id?.includes('car')||e==='🚗'||e==='🚙') return SFX.engineRev(); if (g.id?.includes('Plane')||e==='✈️') return SFX.jet(); if (g.id?.includes('yacht')||e==='🛥️') return (SFX.wind(),SFX.whoosh()); return SFX.whoosh(); }
 }
 
-/* ----------------------- send animations (with SFX) ----------------------- */
+/* ------------- animate gifts (all billionaire wired) ------------- */
 function animateGift(g, combo){
-  // Subtle SFX for small/rare (billionaire have their own SFX below)
-  if ((g.price||1) < 1000) sfxForGift(g);
+  if ((g.price||1) < 1000) sfxForGift(g); // small/rare subtle SFX
 
   const dur =
     g.price >= 10000 ? 9000 :
@@ -620,7 +530,6 @@ function animateGift(g, combo){
   const heavy = g.price >= 1000;
 
   switch(g.id){
-    /* === Common snippets === */
     case 'party': {
       confetti(1600);
       const face = addFx(`<div style="font-size:72px">🥳</div>`, {ms:1600});
@@ -629,8 +538,7 @@ function animateGift(g, combo){
          {transform:'translate(-50%,-48%) scale(1.15)'},
          {transform:'translate(-50%,-50%) scale(1)'}],
         {duration:1400,easing:'ease-in-out'}
-      );
-      break;
+      ); break;
     }
     case 'yum': {
       const n=addFx(`<div style="font-size:84px">😋</div>`, {ms:1500});
@@ -639,8 +547,7 @@ function animateGift(g, combo){
          {transform:'translate(-50%,-53%)'},
          {transform:'translate(-50%,-50%)'}],
         {duration:1200,easing:'ease-in-out'}
-      );
-      break;
+      ); break;
     }
     case 'butterfly': {
       const n=addFx(`<div style="font-size:70px">🦋</div>`, {ms:dur});
@@ -651,8 +558,7 @@ function animateGift(g, combo){
          {opacity:.6,transform:'translate(-50%,-50%) scale(1)'},
          {opacity:0,transform:'translate(-50%,-50%) scale(1.2)'}],
         {duration:1200}
-      );
-      break;
+      ); break;
     }
     case 'goldHummer': {
       const car=addFx(`<div style="font-size:72px;filter:drop-shadow(0 14px 20px rgba(0,0,0,.5))">🚙</div>`, {ms:dur,style:{bottom:'12%',left:'-10%'}});
@@ -668,24 +574,13 @@ function animateGift(g, combo){
         const puff=addFx(`<div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff8,transparent 60%)"></div>`,
                          {ms:1600,style:{left:'35%',bottom:'12%'}});
         puff.style.top='auto';
-        puff.animate(
-          [{transform:'translate(0,0) scale(.6)',opacity:.7},
-           {transform:'translate(20px,-40px) scale(1.4)',opacity:0}],
-          {duration:1200,delay:i*120}
-        );
-      }
-      break;
+        puff.animate([{transform:'translate(0,0) scale(.6)',opacity:.7},{transform:'translate(20px,-40px) scale(1.4)',opacity:0}],{duration:1200,delay:i*120});
+      } break;
     }
 
     /* ===== Billionaire set ===== */
+    case 'phoenix': { loadEffectJson('phoenix_rebirth').then(runPhoenix); break; }
 
-    /* 1) Fiery Phoenix — JSON timeline + SFX cues */
-    case 'phoenix': {
-      loadEffectJson('phoenix_rebirth').then(runPhoenix);
-      break;
-    }
-
-    /* 2) Racing Unicorn – comet arc with stardust */
     case 'unicorn': {
       lensTint('rgba(255,255,255,.18)', 1600);
       const n=addFx(`<div style="font-size:100px">🦄</div>`, {ms:dur});
@@ -704,35 +599,25 @@ function animateGift(g, combo){
            {transform:`translate(${200+Math.random()*120}px, ${-120+Math.random()*40}px)`,opacity:0}],
           {duration:1800,delay:i*40}
         );
-      }
-      break;
+      } break;
     }
 
-    /* 3) Crystal Castle – rises from mist, crystal glints */
     case 'castle': {
       lensTint('rgba(120,160,255,.18)', 1200);
       const mist=addFx(`<div style="width:120vw;height:30vh;background:radial-gradient(60% 40% at 50% 50%, rgba(180,200,255,.25), transparent 70%);"></div>`,
                        {ms:2200,style:{bottom:'-6%',left:'50%'}});
       mist.style.top='auto';
       const c=addFx(`<div style="font-size:110px">🏰</div>`, {ms:dur});
-      c.animate(
-        [{transform:'translate(-50%,30vh) scale(.85)'},{transform:'translate(-50%,-50%) scale(1)'}],
-        {duration:1600,easing:'ease-out'}
-      );
+      c.animate([{transform:'translate(-50%,30vh) scale(.85)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1600,easing:'ease-out'});
       setTimeout(()=>SFX.choir(), 1600);
       for(let i=0;i<20;i++){
         const g=addFx(`<div style="width:8px;height:8px;border-radius:2px;background:linear-gradient(45deg,#fff,#9cf)"></div>`,{ms:1400});
-        g.animate(
-          [{transform:`translate(${(Math.random()*2-1)*60}px, ${(Math.random()*2-1)*60}px) scale(.6)`,opacity:.0},
-           {transform:`translate(${(Math.random()*2-1)*30}px, ${(Math.random()*2-1)*30}px) scale(1.2)`,opacity:1},
-           {opacity:0}],
-          {duration:1200,delay:i*60}
-        );
-      }
-      break;
+        g.animate([{transform:`translate(${(Math.random()*2-1)*60}px, ${(Math.random()*2-1)*60}px) scale(.6)`,opacity:.0},
+                   {transform:`translate(${(Math.random()*2-1)*30}px, ${(Math.random()*2-1)*30}px) scale(1.2)`,opacity:1},
+                   {opacity:0}],{duration:1200,delay:i*60});
+      } break;
     }
 
-    /* 4) Pirate Treasure Chest – chest pops open, coin burst */
     case 'treasure': {
       const chest=addFx(`<div style="width:180px;height:110px;border-radius:12px;background:linear-gradient(#6d3b10,#3c2309);border:3px solid #d2a04d;position:relative;overflow:hidden">
         <div style="position:absolute;inset:0 0 auto 0;height:60px;background:linear-gradient(#8a4e12,#5a310c);border-bottom:3px solid #d2a04d;transform-origin:bottom center"></div>
@@ -752,11 +637,9 @@ function animateGift(g, combo){
           );
         }
         lensTint('rgba(255,220,120,.28)',800);
-      },800);
-      break;
+      },800); break;
     }
 
-    /* 5) Mansion in the Sky – cloud parallax + sunbeams */
     case 'skyMansion': {
       for(let i=0;i<6;i++){
         const size=180+Math.random()*160, y=20+Math.random()*40, t=5000+Math.random()*2000;
@@ -770,14 +653,10 @@ function animateGift(g, combo){
         beam.animate([{opacity:0},{opacity:.35},{opacity:0}],{duration:2400,delay:i*180});
       }
       const m=addFx(`<div style="font-size:100px">🏙️</div>`, {ms:dur});
-      m.animate(
-        [{transform:'translate(-50%,40vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],
-        {duration:1800,easing:'ease-out'}
-      );
+      m.animate([{transform:'translate(-50%,40vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1800,easing:'ease-out'});
       break;
     }
 
-    /* 6) Mermaid – sine swim + bubbles + splash */
     case 'mermaid': {
       const mer=addFx(`<div style="font-size:100px">🧜‍♀️</div>`, {ms:dur});
       mer.animate(
@@ -791,81 +670,48 @@ function animateGift(g, combo){
         b.animate(
           [{transform:`translate(${(Math.random()*2-1)*140}px, ${60+Math.random()*40}px)`,opacity:.0},
            {transform:'translate(0,0)',opacity:.9},
-           {transform:`translate(${(Math.random()*2-1)*80}px, ${-120-Math.random()*60}px)`,opacity:0}],
+           {transform:`translate(${(Math.random()*2-1)*80}px, ${-120+Math.random()*60}px)`,opacity:0}],
           {duration:1800,delay:i*60}
         );
-      }
-      break;
+      } break;
     }
 
-    /* 7) Cupids – heart-arrow rain + winged pop-ins */
     case 'cupids': {
       SFX.twinkle();
       for(let i=0;i<50;i++){
         const h=addFx(`<div style="font-size:28px">💘</div>`, {ms:2200});
-        h.animate(
-          [{transform:`translate(${ -60 + Math.random()*120 }vw,-60vh) rotate(-20deg)`,opacity:.0},
-           {transform:`translate(${ -20 + Math.random()*40 }vw,20vh) rotate(0deg)`,opacity:1},
-           {transform:`translate(${ 60 + Math.random()*40 }vw,60vh) rotate(15deg)`,opacity:0}],
-          {duration:2000,delay:i*40,easing:'linear'}
-        );
-      }
-      for(let i=0;i<2;i++){
-        const c=addFx(`<div style="font-size:64px">👼</div>`, {ms:2600});
-        c.animate(
-          [{transform:`translate(${i?'-70vw':'70vw'},-10vh) scale(1.1)`},
-           {transform:'translate(0,0) scale(1)'}],
-          {duration:1200,easing:'ease-out'}
-        );
-      }
-      break;
+        h.animate([{transform:`translate(${ -60 + Math.random()*120 }vw,-60vh) rotate(-20deg)`,opacity:.0},
+                   {transform:`translate(${ -20 + Math.random()*40 }vw,20vh) rotate(0deg)`,opacity:1},
+                   {transform:`translate(${ 60 + Math.random()*40 }vw,60vh) rotate(15deg)`,opacity:0}],
+                  {duration:2000,delay:i*40,easing:'linear'});
+      } break;
     }
 
-    /* 8) Elf Queen – regal entrance + crown burst */
     case 'elfQueen': {
       lensTint('rgba(180,140,255,.20)', 1200);
       const q=addFx(`<div style="font-size:100px">🧝‍♀️</div>`, {ms:dur});
-      q.animate(
-        [{transform:'translate(-50%,30vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],
-        {duration:1400,easing:'ease-out'}
-      );
+      q.animate([{transform:'translate(-50%,30vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1400,easing:'ease-out'});
       const crown=addFx(`<div style="font-size:64px">👑</div>`, {ms:2000,style:{top:'40%'}});
       SFX.chime();
-      crown.animate(
-        [{transform:'translate(-50%,-50%) scale(.4)',opacity:0},
-         {transform:'translate(-50%,-90%) scale(1.2)',opacity:1},
-         {transform:'translate(-50%,-110%) scale(1)',opacity:0}],
-        {duration:1800}
-      );
+      crown.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:0},{transform:'translate(-50%,-90%) scale(1.2)',opacity:1},{transform:'translate(-50%,-110%) scale(1)',opacity:0}],{duration:1800});
       for(let i=0;i<30;i++){
         const s=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:#fff"></div>`,{ms:1600});
-        s.animate(
-          [{transform:`translate(${(Math.random()*2-1)*120}px, ${(Math.random()*2-1)*120}px) scale(.6)`,opacity:0},
-           {transform:'translate(0,0) scale(1.4)',opacity:1},
-           {opacity:0}],
-          {duration:1500,delay:i*40}
-        );
-      }
-      break;
+        s.animate([{transform:`translate(${(Math.random()*2-1)*120}px, ${(Math.random()*2-1)*120}px) scale(.6)`,opacity:0},
+                   {transform:'translate(0,0) scale(1.4)',opacity:1},
+                   {opacity:0}],{duration:1500,delay:i*40});
+      } break;
     }
 
-    /* 9) Golden Private Jet – fly-by + shock ring + contrails */
     case 'goldJet': {
       const jet=addFx(`<div style="font-size:96px">🛩️</div>`, {ms:dur,style:{left:'-20%'}});
       SFX.jet();
-      jet.animate(
-        [{transform:'translate(-10vw,0) scale(.9)'},
-         {transform:'translate(40vw,-10vh) scale(1)'},
-         {transform:'translate(120vw,-18vh) scale(1.05)'}],
-        {duration:4200,easing:'cubic-bezier(.4,.8,.2,1)'}
-      );
+      jet.animate([{transform:'translate(-10vw,0) scale(.9)'},
+                   {transform:'translate(40vw,-10vh) scale(1)'},
+                   {transform:'translate(120vw,-18vh) scale(1.05)'}],
+                  {duration:4200,easing:'cubic-bezier(.4,.8,.2,1)'});
       setTimeout(()=>{
         const ring=addFx(`<div style="width:12px;height:12px;border:4px solid rgba(255,255,255,.7);border-radius:9999px"></div>`, {ms:900});
-        ring.animate(
-          [{transform:'translate(-50%,-50%) scale(.2)',opacity:1},
-           {transform:'translate(-50%,-50%) scale(10)',opacity:0}],
-          {duration:900}
-        );
+        ring.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:1},{transform:'translate(-50%,-50%) scale(10)',opacity:0}],{duration:900});
       },900);
       for(let i=0;i<4;i++){
         const trail=addFx(`<div style="width:2px;height:50vh;background:linear-gradient(#fff,transparent)"></div>`, {ms:1600,style:{left:`${30+i*4}%`,top:'10%'}});
@@ -875,85 +721,59 @@ function animateGift(g, combo){
       break;
     }
 
-    /* 10) Diamond Rolex – spin, gleam, tick sparks */
     case 'rolex': {
       const w=addFx(`<div style="font-size:110px">⌚</div>`, {ms:dur});
-      w.animate(
-        [{transform:'translate(-50%,-50%) rotate(0deg)'},
-         {transform:'translate(-50%,-50%) rotate(360deg)'}],
-        {duration:2600,easing:'linear',iterations:3}
-      );
+      w.animate([{transform:'translate(-50%,-50%) rotate(0deg)'},
+                 {transform:'translate(-50%,-50%) rotate(360deg)'}],
+                {duration:2600,easing:'linear',iterations:3});
       for(let i=0;i<3;i++){
-        const g=addFx(`<div style="width:220px;height:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);transform:skewY(-20deg)"></div>`,
-                       {ms:1200});
+        const g=addFx(`<div style="width:220px;height:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);transform:skewY(-20deg)"></div>`,{ms:1200});
         g.animate([{transform:'translate(-70%,-50%)'},{transform:'translate(20%,-50%)'}],{duration:1200,delay:i*600});
       }
       for(let i=0;i<24;i++){
         const sp=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:#fff"></div>`,{ms:1200});
         const a=i*(360/24), r=80;
-        sp.animate(
-          [{transform:`translate(${r*Math.cos(a*Math.PI/180)}px, ${r*Math.sin(a*Math.PI/180)}px) scale(.6)`,opacity:0},
-           {transform:'translate(0,0) scale(1.4)',opacity:1},
-           {opacity:0}],
-          {duration:1000,delay:i*40}
-        );
-      }
-      break;
+        sp.animate([{transform:`translate(${r*Math.cos(a*Math.PI/180)}px, ${r*Math.sin(a*Math.PI/180)}px) scale(.6)`,opacity:0},
+                    {transform:'translate(0,0) scale(1.4)',opacity:1},
+                    {opacity:0}],{duration:1000,delay:i*40});
+      } break;
     }
 
-    /* 11) Chariots of Horses – multi-horse gallop with dust */
     case 'chariots': {
-      const herd = ['🐎','🐎','🐎','🐎'];
-      SFX.gallop();
+      const herd = ['🐎','🐎','🐎','🐎']; SFX.gallop();
       herd.forEach((h,i)=>{
         const horse=addFx(`<div style="font-size:${i<2?84:72}px">${h}</div>`, {ms:dur,style:{left:'-10%'}});
-        horse.animate(
-          [{transform:`translate(${-120 - i*20}vw, ${i%2?6:-6}vh)`},
-           {transform:`translate(60vw, ${i%2?-2:2}vh)`},
-           {transform:`translate(130vw, ${i%2?0:4}vh)`}],
-          {duration:5200 + i*200,easing:'cubic-bezier(.4,.8,.2,1)'}
-        );
+        horse.animate([{transform:`translate(${-120 - i*20}vw, ${i%2?6:-6}vh)`},
+                       {transform:`translate(60vw, ${i%2?-2:2}vh)`},
+                       {transform:`translate(130vw, ${i%2?0:4}vh)`}],
+                      {duration:5200 + i*200,easing:'cubic-bezier(.4,.8,.2,1)'});
       });
       for(let i=0;i<30;i++){
         const d=addFx(`<div style="width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#fff5,transparent 60%)"></div>`,{ms:1400,style:{bottom:'8%'}});
         d.style.top='auto';
-        d.animate([{transform:`translate(${Math.random()*80-40}px,0)`,opacity:.7},
-                   {transform:`translate(${Math.random()*120-60}px,-40px)`,opacity:0}],
-                  {duration:1200,delay:i*60});
-      }
-      break;
+        d.animate([{transform:`translate(${Math.random()*80-40}px,0)`,opacity:.7},{transform:`translate(${Math.random()*120-60}px,-40px)`,opacity:0}],{duration:1200,delay:i*60});
+      } break;
     }
 
-    /* ===== Generic fallback ===== */
     default: {
       const n=addFx(`<div style="font-size:${heavy?96:g.price>=500?84:64}px">${g.emo}</div>`, {ms:dur});
-      n.animate(
-        [{transform:'translate(-50%,-40%) scale(.9)'},
-         {transform:'translate(-50%,-50%) scale(1.2)'},
-         {transform:'translate(-50%,-55%) scale(1)'}],
-        {duration:1400,easing:'ease-in-out'}
-      );
+      n.animate([{transform:'translate(-50%,-40%) scale(.9)'},
+                 {transform:'translate(-50%,-50%) scale(1.2)'},
+                 {transform:'translate(-50%,-55%) scale(1)'}],
+                {duration:1400,easing:'ease-in-out'});
       for(let i=0;i<10;i++){
         const star=addFx(`<div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>`, {ms:1200});
-        star.animate(
-          [{transform:`translate(${(Math.random()*2-1)*80}px, ${(Math.random()*2-1)*60}px)`,opacity:1},
-           {transform:`translate(${(Math.random()*2-1)*140}px, ${(Math.random()*2-1)*120}px)`,opacity:0}],
-          {duration:1000,delay:i*60}
-        );
+        star.animate([{transform:`translate(${(Math.random()*2-1)*80}px, ${(Math.random()*2-1)*60}px)`,opacity:1},
+                      {transform:`translate(${(Math.random()*2-1)*140}px, ${(Math.random()*2-1)*120}px)`,opacity:0}],
+                     {duration:1000,delay:i*60});
       }
     }
   }
 }
 
-/* ----------------------- mock live button ----------------------- */
+/* ------------- misc ------------- */
 el('goLive').addEventListener('click', ()=> toast("Mock: Start Live not wired in demo", "warn"));
-
-/* ----------------------- global error banner ----------------------- */
-window.addEventListener('error', e=>{
-  toast("JS error: "+(e.message||'Unknown'), 'bad', 2600);
-});
-
-/* default nav */
+window.addEventListener('error', e=> toast("JS error: "+(e.message||'Unknown'), 'bad', 2600));
 show('scrHome');
 </script>
 </body>
