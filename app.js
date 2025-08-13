@@ -335,6 +335,115 @@ document.addEventListener("DOMContentLoaded", () => {
     ).onfinish = () => bubble.remove();
   }
 
+// ---------- Pi SDK Dev helpers ----------
+(function () {
+  const isPiBrowser = () =>
+    typeof window !== "undefined" &&
+    (window.Pi || /PiBrowser/i.test(navigator.userAgent));
+
+  const el = (id) => document.getElementById(id);
+
+  const updateUI = ({ inited, user }) => {
+    const tools = el("piTools");
+    const initState = el("piInitState");
+    const userState = el("piUserState");
+    const btnInit = el("btnPiInit");
+    const btnSign = el("btnPiSignIn");
+
+    if (!tools) return;
+    tools.classList.toggle("hidden", !isPiBrowser());
+
+    if (initState) initState.textContent = inited ? "inited" : "not inited";
+    if (userState)
+      userState.textContent = user ? `@${user.username}` : "no user";
+
+    if (btnInit) btnInit.disabled = inited; // once inited, disable
+    if (btnSign) btnSign.disabled = !inited || !!user;
+  };
+
+  const loadFromStorage = () => ({
+    inited: localStorage.getItem("pi:init") === "1",
+    user: JSON.parse(localStorage.getItem("pi:user") || "null"),
+  });
+
+  const saveInit = () => localStorage.setItem("pi:init", "1");
+  const saveUser = (u) => localStorage.setItem("pi:user", JSON.stringify(u));
+  const clearPi = () => {
+    localStorage.removeItem("pi:init");
+    localStorage.removeItem("pi:user");
+    updateUI({ inited: false, user: null });
+  };
+
+  async function tryInit() {
+    if (!window.Pi) {
+      console.log("Pi object not present.");
+      alert("Pi SDK not detected. Be sure you opened this in the Pi Browser.");
+      return;
+    }
+    // Use sandbox true for testnet
+    await window.Pi.init({ sandbox: true });
+    saveInit();
+    updateUI({ ...loadFromStorage() });
+    bubble("✅ Pi.init(sandbox:true) done");
+  }
+
+  async function trySignIn() {
+    if (!window.Pi) return;
+    try {
+      bubble("⏳ Calling Pi.authenticate (username)...");
+      const scopes = ["username"];
+      const authRes = await window.Pi.authenticate(
+        scopes,
+        // onIncompletePaymentFound (not used in username-only)
+        (payment) => console.log("incomplete payment", payment)
+      );
+      if (authRes && authRes.user) {
+        saveUser(authRes.user);
+        updateUI({ ...loadFromStorage() });
+        bubble(`👤 Signed in as @${authRes.user.username}`);
+      } else {
+        bubble("⚠️ No user returned");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Auth error: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  // tiny on-screen log bubble (already in your code base; keeping a fallback)
+  function bubble(msg) {
+    try {
+      if (window.logBubble) return window.logBubble(msg);
+    } catch (_) {}
+    console.log("[BuzzPi]", msg);
+  }
+
+  // Wire buttons once DOM is ready
+  window.addEventListener("DOMContentLoaded", () => {
+    if (!isPiBrowser()) return updateUI({ inited: false, user: null });
+
+    const btnInit = el("btnPiInit");
+    const btnSign = el("btnPiSignIn");
+    const btnClear = el("btnPiClear");
+
+    if (btnInit) btnInit.addEventListener("click", tryInit);
+    if (btnSign) btnSign.addEventListener("click", trySignIn);
+    if (btnClear) btnClear.addEventListener("click", () => {
+      clearPi();
+      bubble("🧼 Cleared local Pi session. Reload and re-auth if needed.");
+    });
+
+    // Auto-show correct state
+    updateUI({ ...loadFromStorage() });
+
+    // Optional: auto-init the very first time in Pi Browser
+    const st = loadFromStorage();
+    if (!st.inited) {
+      // Comment this line out if you prefer manual init
+      // tryInit();
+    }
+  });
+})();
   // ---------- Initial ----------
   showPage("feedPage");
 });
