@@ -211,3 +211,11 @@ body{
   transition: opacity .15s ease, transform .15s ease;
 }
 .toast--show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+/* gift icons */
+.gift__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: block;
+}
