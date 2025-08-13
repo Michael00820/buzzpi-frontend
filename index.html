@@ -1,43 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BuzzPi</title>
-  <link rel="preload" href="assets/css/app.css?v=15" as="style">
-  <link rel="stylesheet" href="assets/css/app.css?v=15">
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="app">
+<body>
+
   <header class="topbar">
-    <div class="brand">BuzzPi</div>
+    <div class="logo">BuzzPi</div>
     <div class="balance">
-      <img class="coin" src="assets/img/buzzcoin.svg" alt="coin" />
-      <span id="balance">0</span>
+      <img src="coin-icon.png" alt="BuzzCoin" class="coin-icon" />
+      <span id="buzzBalance">0</span>
     </div>
   </header>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="following">Following</button>
-    <button class="tab" data-tab="popular">Popular</button>
-    <button class="tab" data-tab="nearby">Nearby</button>
-    <button class="tab" data-tab="new">New</button>
-  </nav>
+  <main>
+    <section class="tabs">
+      <button class="tab active">Following</button>
+      <button class="tab">Popular</button>
+      <button class="tab">Nearby</button>
+      <button class="tab">New</button>
+    </section>
 
-  <main id="content" class="content">
-    <h1>Feed</h1>
-    <p>Following feed placeholder.</p>
+    <section class="feed">
+      <h2>Feed</h2>
+      <p>Following feed placeholder.</p>
+    </section>
   </main>
 
-  <button id="soundToggle" class="sound-toggle" aria-pressed="true" title="Sound">🔈 On</button>
-  <button id="honeypot" class="honeypot" title="Go Live">🍯</button>
+  <!-- Bottom Navigation Bar -->
+  <ul class="tabbar" id="tabbar">
+    <li><button class="tab" data-tab="home">🏠<span>Home</span></button></li>
+    <li><button class="tab" data-tab="gifts">🎁<span>Gifts</span></button></li>
 
-  <nav class="nav">
-    <button class="navbtn" data-screen="home">🏠<span>Home</span></button>
-    <button class="navbtn" data-screen="gifts">🎁<span>Gifts</span></button>
-    <button class="navbtn" data-screen="wallet">💰<span>Wallet</span></button>
-    <button class="navbtn" data-screen="profile">👤<span>Profile</span></button>
-  </nav>
+    <!-- Spacer for FAB -->
+    <li class="fab-gap" aria-hidden="true"></li>
 
-  <script defer src="assets/js/app.js?v=15"></script>
+    <li><button class="tab" data-tab="wallet">💰<span>Wallet</span></button></li>
+    <li><button class="tab" data-tab="profile">👤<span>Profile</span></button></li>
+  </ul>
+
+  <!-- Floating Honeypot Button -->
+  <button class="honeypot" id="honeypotBtn" aria-label="Go Live">🍯</button>
+
+  <!-- Sound Toggle -->
+  <div class="sound-toggle">
+    <button id="soundBtn">🔊 On</button>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
