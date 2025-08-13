@@ -1,54 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BuzzPi</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="logo">BuzzPi</div>
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <h1>BuzzPi</h1>
     <div class="balance">
-      <img src="coin-icon.png" alt="BuzzCoin" class="coin-icon" />
-      <span id="buzzBalance">0</span>
+      <img id="bzIcon" src="/assets/buzzcoin.svg" alt="BuzzCoin" width="22" height="22"
+           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?><svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 128 128&quot;><defs><linearGradient id=&quot;g&quot; x1=&quot;14%&quot; y1=&quot;6%&quot; x2=&quot;86%&quot; y2=&quot;94%&quot;><stop offset=&quot;0%&quot; stop-color=&quot;%23FFE39A&quot;/><stop offset=&quot;55%&quot; stop-color=&quot;%23F7B25F&quot;/><stop offset=&quot;100%&quot; stop-color=&quot;%23C6712C&quot;/></linearGradient></defs><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;58&quot; fill=&quot;url(%23g)&quot;/><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;58&quot; fill=&quot;none&quot; stroke=&quot;rgba(255,255,255,.35)&quot; stroke-width=&quot;2&quot;/><circle cx=&quot;64&quot; cy=&quot;64&quot; r=&quot;52&quot; fill=&quot;none&quot; stroke=&quot;rgba(0,0,0,.15)&quot; stroke-width=&quot;2&quot;/><path d=&quot;M72 86c0 4.4-3.6 8-8 8s-8-3.6-8-8V46.5l-3.6 2.8c-3.5 2.8-8.6 2.2-11.4-1.3-2.8-3.5-2.2-8.6 1.3-11.4l12.7-10c2.2-1.7 5-2.7 7.8-2.7 7 0 12.7 5.7 12.7 12.7V86z&quot; fill=&quot;%236D430F&quot; opacity=&quot;.92&quot;/></svg>';">
+      <span id="balanceAmt">0</span>
     </div>
   </header>
 
+  <!-- Feed -->
   <main>
-    <section class="tabs">
-      <button class="tab active">Following</button>
-      <button class="tab">Popular</button>
-      <button class="tab">Nearby</button>
-      <button class="tab">New</button>
-    </section>
-
-    <section class="feed">
-      <h2>Feed</h2>
-      <p>Following feed placeholder.</p>
-    </section>
+    <h2>Feed</h2>
+    <p>Following feed placeholder.</p>
   </main>
 
-  <!-- Bottom Navigation Bar -->
-  <ul class="tabbar" id="tabbar">
-    <li><button class="tab" data-tab="home">🏠<span>Home</span></button></li>
-    <li><button class="tab" data-tab="gifts">🎁<span>Gifts</span></button></li>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="#" class="nav-btn">🏠<span>Home</span></a>
+    <a href="#" class="nav-btn">🎁<span>Gifts</span></a>
 
-    <!-- Spacer for FAB -->
-    <li class="fab-gap" aria-hidden="true"></li>
+    <!-- Floating Coin Button -->
+    <div class="fab">
+      <div class="pot"></div>
+    </div>
 
-    <li><button class="tab" data-tab="wallet">💰<span>Wallet</span></button></li>
-    <li><button class="tab" data-tab="profile">👤<span>Profile</span></button></li>
-  </ul>
-
-  <!-- Floating Honeypot Button -->
-  <button class="honeypot" id="honeypotBtn" aria-label="Go Live">🍯</button>
-
-  <!-- Sound Toggle -->
-  <div class="sound-toggle">
-    <button id="soundBtn">🔊 On</button>
-  </div>
+    <a href="#" class="nav-btn">💰<span>Wallet</span></a>
+    <a href="#" class="nav-btn">👤<span>Profile</span></a>
+  </nav>
 
   <script src="app.js"></script>
 </body>
