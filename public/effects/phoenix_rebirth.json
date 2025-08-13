@@ -1,0 +1,15 @@
+{
+  "id": "gift.phoenix_rebirth",
+  "version": "1.0.0",
+  "lod": ["lite", "standard", "cinematic"],
+  "duration": 8000,
+  "beats": [
+    {"t": 0,    "actions": ["grade:warm_in","vignette:0.25","bloom:0.4","sfx:rumble_in","rimlight:on"]},
+    {"t": 600,  "actions": ["ignite_sigil","particles:sparks_burst","sfx:impact","heat:on"]},
+    {"t": 2200, "actions": ["phoenix:enter_from_bg","dof:focus_near","shake:0.35@60ms","sfx:whoosh_in"]},
+    {"t": 4200, "actions": ["phoenix:crown_form","banner:show","sfx:choir_hit","bloom:0.8"]},
+    {"t": 6000, "actions": ["embers:tail","heat:fade_out","grade:neutral_out","banner:hold"]},
+    {"t": 8000, "actions": ["end"]}
+  ],
+  "combo": { "window": 8000, "tiers": [ { "min": 2, "effect": "wingspan_plus" }, { "min": 3, "effect": "loop_second_pass" } ] }
+}
