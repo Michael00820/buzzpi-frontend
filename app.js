@@ -1,538 +1,165 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const pageViews = document.querySelectorAll(".page__view");
-  const tabButtons = document.querySelectorAll(".tabbar__item");
-  const fabGift = document.getElementById("fabGift");
-  const topTabs = document.querySelectorAll(".tab");
-  const soundToggle = document.getElementById("soundToggle");
-  const soundLabel = document.getElementById("soundLabel");
-  const balanceAmountEl = document.getElementById("balanceAmount");
+/* =========================================================
+   BuzzPi – app.js (fresh copy with Pi auth fixes)
+   ========================================================= */
 
-  // ---------- State ----------
-  let balance = 0;
-  let soundOn = true;
-  let selectedGiftId = null;
-  let pressTimer = null;
-  let pressInterval = null;
+// ---------- Utilities ----------
+const $  = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  // ---------- Utils ----------
-  const formatK = (val) => {
-    if (val >= 1_000_000) return (val/1_000_000).toFixed(val>=10_000_000?0:1)+'m';
-    if (val >= 1_000)     return (val/1_000).toFixed(val>=10_000?0:1)+'k';
-    return String(val);
-  };
-  const setBalance = (v) => {
-    balance = Math.max(0, Number(v)||0);
-    balanceAmountEl.textContent = formatK(balance);
-  };
-  setBalance(0);
+function logToPanel(msg) {
+  try {
+    const el = $("#consolePanel");
+    if (el) el.textContent += (el.textContent ? "\n" : "") + msg;
+  } catch {}
+  console.log(msg);
+}
 
-  const toast = (() => {
-    let el = document.querySelector(".toast");
-    if (!el) {
-      el = document.createElement("div");
-      el.className = "toast";
-      document.body.appendChild(el);
-    }
-    let t;
-    return (msg, ms=1600) => {
-      el.textContent = msg;
-      el.classList.add("toast--show");
-      clearTimeout(t);
-      t = setTimeout(()=> el.classList.remove("toast--show"), ms);
-    };
-  })();
+function formatAbbrev(n) {
+  const num = Number(n || 0);
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(num % 1_000_000_000 ? 1 : 0) + "b";
+  if (num >= 1_000_000)     return (num / 1_000_000).toFixed(num % 1_000_000 ? 1 : 0) + "m";
+  if (num >= 1_000)         return (num / 1_000).toFixed(num % 1_000 ? 1 : 0) + "k";
+  return String(num);
+}
 
-  // ---------- Pages ----------
-  const showPage = (id) => {
-    pageViews.forEach(v => v.classList.toggle("page__view--active", v.id === id));
-    const map = { home:"feedPage", gifts:"giftsPage", wallet:"walletPage", profile:"profilePage" };
-    tabButtons.forEach(btn => btn.classList.toggle("active", map[btn.dataset.page] === id));
-  };
+// ---------- State ----------
+const state = {
+  balance: Number(localStorage.getItem("buzzpi.balance") || 0),
+  soundOn: localStorage.getItem("buzzpi.soundOn") !== "0",
+  user: null, // Pi user once authenticated
+};
 
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const page = btn.dataset.page;
-      if (page === "home")  showPage("feedPage");
-      if (page === "gifts") { showPage("giftsPage"); ensureGiftsMounted(); }
-      if (page === "wallet") showPage("walletPage");
-      if (page === "profile") showPage("profilePage");
-    });
+// ---------- UI Wiring ----------
+function updateBalance() {
+  $("#balanceValue").textContent = formatAbbrev(state.balance);
+}
+
+function setSound(on) {
+  state.soundOn = !!on;
+  localStorage.setItem("buzzpi.soundOn", on ? "1" : "0");
+  const label = $(".sound-label");
+  if (label) label.textContent = on ? "On" : "Off";
+}
+
+function showPage(id) {
+  $$(".page").forEach(p => p.classList.toggle("visible", p.id === id));
+  $$(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.target === id));
+}
+
+function attachNav() {
+  $$(".nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => showPage(btn.dataset.target));
   });
-
-  topTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      topTabs.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-    });
-  });
-
-  if (fabGift) {
-    fabGift.addEventListener("click", () => {
-      showPage("giftsPage");
-      ensureGiftsMounted();
-    });
-  }
-
-  if (soundToggle) {
-    soundToggle.addEventListener("click", () => {
-      soundOn = !soundOn;
-      soundToggle.setAttribute("aria-pressed", String(soundOn));
-      soundLabel.textContent = soundOn ? "On" : "Off";
-    });
-  }
-
-  const add100 = document.getElementById("devAdd100");
-  const resetBal = document.getElementById("resetBalance");
-  if (add100) add100.addEventListener("click", () => setBalance(balance + 100));
-  if (resetBal) resetBal.addEventListener("click", () => setBalance(0));
-
-  // ---------- Gift Icon Generator (SVG badges) ----------
-  // returns a data URL (data:image/svg+xml;utf8,...) per name
-  function iconDataURL(key) {
-    const K = key.toLowerCase().replace(/\s+/g,'-'); // normalized
-    const svg = (inner, grad=`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"  stop-color="#303041"/>
-        <stop offset="100%" stop-color="#191922"/>
-      </linearGradient>`,
-      accent="#8aa0ff") => `
-<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-  <defs>${grad}</defs>
-  <rect x="2" y="2" width="36" height="36" rx="9" fill="url(#g)"/>
-  ${inner}
-  <circle cx="33.2" cy="8.2" r="1.2" fill="${accent}" opacity=".9"/>
-</svg>`;
-
-    const goldGrad = `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"  stop-color="#3a2a12"/>
-        <stop offset="55%" stop-color="#8b5e17"/>
-        <stop offset="100%" stop-color="#281f0e"/>
-      </linearGradient>`;
-
-    const crystalGrad = `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"  stop-color="#233041"/>
-        <stop offset="50%" stop-color="#2a4b69"/>
-        <stop offset="100%" stop-color="#1a2635"/>
-      </linearGradient>`;
-
-    const jadeGrad = `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#0e3a2a"/>
-        <stop offset="60%" stop-color="#2aa071"/>
-        <stop offset="100%" stop-color="#0b2b20"/>
-      </linearGradient>`;
-
-    // tiny pictos (simple shapes—fast to render)
-    const car = (fill) => `<path d="M8 22h24l-2-5.2c-.4-1-1.3-1.8-2.4-2l-6.2-1.1c-1.6-.3-3.2-.3-4.8 0L10.9 15c-1.1.2-2 .9-2.4 2L8 22Z" fill="${fill}"/>
-      <circle cx="14" cy="25" r="2.6" fill="#0d0d12"/><circle cx="26" cy="25" r="2.6" fill="#0d0d12"/>`;
-    const plane = (fill) => `<path d="M7 23l26-6-1.6-2.4L18 18l1-6-2.6-.8-1.6 6.9-6.8 2.1L7 23Z" fill="${fill}"/>`;
-    const yacht = (fill) => `<path d="M9 24h22c-.9 2.7-4 5-10.8 5-7.4 0-10.7-2.3-11.2-5Z" fill="${fill}"/><path d="M13 17h8l5 4H12l1-4Z" fill="#cfd8ff" opacity=".35"/><path d="M14 12l8 5h-9l1-5Z" fill="#cfd8ff" opacity=".25"/>`;
-    const crown = (fill) => `<path d="M9 24l2-7 5 4 4-6 4 6 5-4 2 7H9Z" fill="${fill}"/><rect x="11" y="24" width="18" height="4" rx="1.2" fill="#0d0d12"/>`;
-    const castle = (fill) => `<rect x="10" y="18" width="20" height="10" rx="2" fill="${fill}"/><rect x="17" y="14" width="6" height="4" fill="${fill}"/><rect x="18" y="21" width="4" height="7" fill="#0d0d12"/>`;
-    const treasure = (fill) => `<rect x="10" y="18" width="20" height="10" rx="2" fill="${fill}"/><rect x="10" y="16" width="20" height="4" rx="2" fill="#65420f"/><circle cx="20" cy="23" r="2" fill="#0d0d12"/>`;
-    const mansion = (fill) => `<rect x="12" y="16" width="16" height="12" rx="1.6" fill="${fill}"/><rect x="18" y="19" width="4" height="9" fill="#0d0d12"/><rect x="14" y="19" width="2.6" height="3.6" fill="#0d0d12"/><rect x="23.4" y="19" width="2.6" height="3.6" fill="#0d0d12"/>`;
-    const mermaid = (fill) => `<circle cx="17.5" cy="19" r="3" fill="${fill}"/><path d="M15 22c4 2 7 2 9 6-5-.4-8-1.5-10-3.3 0-1.1.4-2.1 1-2.7Z" fill="#3bc9af"/>`;
-    const cupids = (fill) => `<path d="M12 24c2.2-4.2 5.8-5 8-1.2 2.2-3.8 5.8-3 8 1.2-3.2 1.6-6 3.3-8 5.2-2-1.9-4.8-3.6-8-5.2Z" fill="${fill}"/>`;
-    const jet = (fill) => `<path d="M8 24l10-4 1-8 3 6 10-4-8 10-6 3-10-3Z" fill="${fill}"/>`;
-    const rolex = (fill) => `<circle cx="20" cy="22" r="7" fill="${fill}"/><rect x="18.8" y="11" width="2.4" height="6" rx="1" fill="${fill}"/><rect x="18.8" y="27" width="2.4" height="6" rx="1" fill="${fill}"/><circle cx="20" cy="22" r="3.2" fill="#0d0d12"/>`;
-    const horses = (fill) => `<path d="M9 25c3-5 7-6 11-3l2-2 2 1-1 3c2 2 3 3 5 6-6-1-11-2-19-5Z" fill="${fill}"/>`;
-    const phoenix = (fill) => `<path d="M13 26c4-1 5-3 6-6 1 3 3 5 8 6-3 .6-5 2.2-8 4-3-1.8-5-3.4-6-4Z" fill="${fill}"/><path d="M20 14c1.8 0 3.2 1.4 3.2 3.2S21.8 20.4 20 20.4 16.8 19 16.8 17.2 18.2 14 20 14Z" fill="#ffb37a"/>`;
-    const unicorn = (fill) => `<rect x="12" y="18" width="16" height="9" rx="4.5" fill="${fill}"/><path d="M26 16l3-3 .8 2.6L26 18v-2Z" fill="#ffd26e"/>`;
-
-    // map keys to pictos + palette
-    if (K.includes('jade-lamborghini'))   return toURL(svg(car('#2fc48f'), jadeGrad, '#9ff2cf'));
-    if (K.includes('crystal-aeroplane'))  return toURL(svg(plane('#8fbdf7'), crystalGrad, '#c1dcff'));
-    if (K.includes('golden-hummer'))      return toURL(svg(car('#efc15a'), goldGrad, '#ffe3a7'));
-    if (K.includes('yacht'))              return toURL(svg(yacht('#8fbdf7'), crystalGrad, '#c1dcff'));
-
-    if (K.includes('fiery-phoenix'))      return toURL(svg(phoenix('#ff7a3b'), goldGrad, '#ffd4a8'));
-    if (K.includes('racing-unicorn'))     return toURL(svg(unicorn('#b58cff'), crystalGrad, '#e2d3ff'));
-    if (K.includes('crystal-castle'))     return toURL(svg(castle('#9bc7ff'), crystalGrad, '#d7e8ff'));
-    if (K.includes('pirate-treasure'))    return toURL(svg(treasure('#cf9f3a'), goldGrad, '#ffe2a6'));
-    if (K.includes('mansion-in-the-sky')) return toURL(svg(mansion('#9bc7ff'), crystalGrad, '#d7e8ff'));
-    if (K.includes('mermaid'))            return toURL(svg(mermaid('#6bdcbf'), crystalGrad, '#b7ffe8'));
-    if (K.includes('cupids'))             return toURL(svg(cupids('#ff7aa8'), crystalGrad, '#ffd0e1'));
-    if (K.includes('elf-queen'))          return toURL(svg(crown('#c59cff'), crystalGrad, '#efdfff'));
-    if (K.includes('golden-private-jet')) return toURL(svg(jet('#efc15a'), goldGrad, '#ffe3a7'));
-    if (K.includes('diamond-rolex'))      return toURL(svg(rolex('#9bc7ff'), crystalGrad, '#d7e8ff'));
-    if (K.includes('chariots-of-horses')) return toURL(svg(horses('#efc15a'), goldGrad, '#ffe3a7'));
-
-    // fallback mini star
-    return toURL(svg(`<path d="M20 10l2.2 6.5 6.8.3-5.5 4 2 6.6-5.5-3.8-5.5 3.8 2-6.6-5.5-4 6.8-.3L20 10Z" fill="#9fb3ff"/>`));
-  }
-  function toURL(svg) { return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`; }
-
-  // ---------- Gifts catalog ----------
-  const GIFTS = [
-    {
-      group: "Common",
-      items: [
-        { id:"g1-1",  label:"🥳", price:1 }, { id:"g1-2", label:"🥰", price:1 },
-        { id:"g1-3",  label:"😍", price:1 }, { id:"g1-4", label:"😋", price:1 },
-        { id:"g1-5",  label:"🤗", price:1 }, { id:"g1-6", label:"🤩", price:1 },
-        { id:"g1-7",  label:"🤑", price:1 },
-        { id:"g2-1",  label:"🍭", price:2 }, { id:"g2-2", label:"🍬", price:2 }, { id:"g2-3", label:"🍫", price:2 },
-        { id:"g5-1",  label:"🍸", price:5 }, { id:"g5-2", label:"🍎", price:5 }, { id:"g5-3", label:"🍺", price:5 },
-        { id:"g10-1", label:"🌹", price:10 }, { id:"g10-2", label:"🌸", price:10 }, { id:"g10-3", label:"✨️", price:10 },
-        { id:"g20-1", label:"💐", price:20 }, { id:"g20-2", label:"🍻", price:20 }, { id:"g20-3", label:"👏", price:20 }, { id:"g20-4", label:"💋", price:20 },
-      ]
-    },
-    {
-      group: "Rare",
-      items: [
-        { id:"r50-1", label:"🦋", price:50 }, { id:"r50-2", label:"🌩", price:50 }, { id:"r50-3", label:"🌤", price:50 }, { id:"r50-4", label:"🌈", price:50 }, { id:"r50-5", label:"❄️", price:50 },
-        { id:"r100-1", label:"🧸", price:100 }, { id:"r100-2", label:"🐇", price:100 }, { id:"r100-3", label:"🍾", price:100 }, { id:"r100-4", label:"👑", price:100 }, { id:"r100-5", label:"🍷", price:100 }, { id:"r100-6", label:"🥂", price:100 },
-        { id:"r500-1", label:"Jade Lamborghini", price:500 },
-        { id:"r500-2", label:"Crystal Aeroplane", price:500 },
-        { id:"r500-3", label:"Golden Hummer Jeep", price:500 },
-        { id:"r500-4", label:"Yacht", price:500 },
-      ]
-    },
-    {
-      group: "Billionaire",
-      items: [
-        { id:"b1000-1",  label:"Fiery Phoenix",      price:1000 },
-        { id:"b1000-2",  label:"Racing Unicorn",     price:1000 },
-        { id:"b1000-3",  label:"Crystal Castle",     price:1000 },
-        { id:"b1000-4",  label:"Pirate Treasure",    price:1000 },
-        { id:"b5000-1",  label:"Mansion in the Sky", price:5000 },
-        { id:"b5000-2",  label:"Mermaid",            price:5000 },
-        { id:"b5000-3",  label:"Cupids",             price:5000 },
-        { id:"b5000-4",  label:"Elf Queen",          price:5000 },
-        { id:"b10000-1", label:"Golden Private Jet", price:10000 },
-        { id:"b10000-2", label:"Diamond Rolex",      price:10000 },
-        { id:"b10000-3", label:"Chariots of Horses", price:10000 },
-      ]
-    }
-  ];
-
-  // ---------- Render gifts ----------
-  function ensureGiftsMounted(){
-    const container = document.getElementById("giftsPage");
-    if (!container) return;
-    if (container.dataset.mounted === "1") return;
-
-    container.dataset.mounted = "1";
-    container.innerHTML = `
-      <h1 class="page__title">Gifts</h1>
-      <div class="gifts" id="giftsRoot"></div>
-      <div class="gifts__actions">
-        <button id="sendGiftBtn" class="btn-send">Send</button>
-        <button id="multiGiftBtn" class="btn-multi" title="Hold to multi-send">Hold for Combo</button>
-      </div>
-    `;
-
-    const root = document.getElementById("giftsRoot");
-    GIFTS.forEach(group => {
-      const wrap = document.createElement("div");
-      wrap.className = "gifts__group";
-      wrap.innerHTML = `<div class="gifts__title">${group.group}</div>
-                        <div class="gift-grid"></div>`;
-      const grid = wrap.querySelector(".gift-grid");
-
-      group.items.forEach(item => {
-        const isEmoji = /\p{Extended_Pictographic}/u.test(item.label);
-        const el = document.createElement("button");
-        el.className = "gift";
-        el.dataset.id = item.id;
-        el.dataset.price = item.price;
-
-        let media = "";
-        if (isEmoji) {
-          media = `<div class="gift__emoji">${item.label}</div>`;
-        } else {
-          // named gifts -> generated icon
-          const dataURL = iconDataURL(item.label);
-          media = `<img class="gift__icon" alt="" src="${dataURL}">`;
-        }
-
-        el.innerHTML = `
-          ${media}
-          <div class="gift__label">${isEmoji ? "" : item.label}</div>
-          <div class="gift__price">${item.price} <span style="opacity:.8">①</span></div>
-        `;
-
-        el.addEventListener("click", () => {
-          document.querySelectorAll(".gift").forEach(g => g.classList.remove("gift--selected"));
-          el.classList.add("gift--selected");
-          selectedGiftId = item.id;
-        });
-
-        el.addEventListener("pointerdown", (ev) => {
-          ev.preventDefault();
-          document.querySelectorAll(".gift").forEach(g => g.classList.remove("gift--selected"));
-          el.classList.add("gift--selected");
-          selectedGiftId = item.id;
-          pressTimer = setTimeout(() => {
-            sendGift(item);
-            pressInterval = setInterval(() => sendGift(item), 220);
-          }, 300);
-        });
-        const clearPress = () => { clearTimeout(pressTimer); pressTimer=null; clearInterval(pressInterval); pressInterval=null; };
-        el.addEventListener("pointerup", clearPress);
-        el.addEventListener("pointerleave", clearPress);
-        el.addEventListener("pointercancel", clearPress);
-
-        grid.appendChild(el);
-      });
-
-      root.appendChild(wrap);
-    });
-
-    const sendBtn = document.getElementById("sendGiftBtn");
-    const multiBtn = document.getElementById("multiGiftBtn");
-
-    sendBtn.addEventListener("click", () => {
-      if (!selectedGiftId) return toast("Select a gift first");
-      const el = document.querySelector(`.gift[data-id="${selectedGiftId}"]`);
-      if (!el) return;
-      const price = Number(el.dataset.price);
-      sendGift({ id:selectedGiftId, price });
-    });
-
-    multiBtn.addEventListener("pointerdown", () => {
-      if (!selectedGiftId) return toast("Select a gift first");
-      const el = document.querySelector(`.gift[data-id="${selectedGiftId}"]`);
-      if (!el) return;
-      const price = Number(el.dataset.price);
-      pressInterval = setInterval(() => sendGift({ id:selectedGiftId, price }), 220);
-    });
-    const stopMulti = () => { clearInterval(pressInterval); pressInterval=null; };
-    multiBtn.addEventListener("pointerup", stopMulti);
-    multiBtn.addEventListener("pointerleave", stopMulti);
-    multiBtn.addEventListener("pointercancel", stopMulti);
-  }
-
-  // ---------- Send gift (deduct + simple FX stub) ----------
-  function sendGift(item){
-    if (balance < item.price) {
-      toast("Insufficient balance");
-      return;
-    }
-    setBalance(balance - item.price);
-
-    const layer = document.getElementById("fx-layer") || (() => {
-      const d = document.createElement("div");
-      d.id = "fx-layer"; d.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:70;";
-      document.body.appendChild(d); return d;
-    })();
-
-    const bubble = document.createElement("div");
-    bubble.style.cssText = `
-      position:absolute; left:50%; top:60%;
-      transform:translate(-50%,-50%) scale(0.8);
-      padding:14px 18px; border-radius:999px; font-weight:800;
-      background:rgba(30,30,38,.85); color:#fff; border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 10px 30px rgba(0,0,0,.45);
-    `;
-    bubble.textContent = `+ ${item.price} gift sent`;
-    layer.appendChild(bubble);
-    bubble.animate(
-      [
-        { transform: 'translate(-50%,-50%) scale(0.8)', opacity: 0 },
-        { transform: 'translate(-50%,-60%) scale(1)', opacity: 1, offset: .3 },
-        { transform: 'translate(-50%,-80%) scale(0.98)', opacity: 0 }
-      ],
-      { duration: 900, easing: 'ease-out' }
-    ).onfinish = () => bubble.remove();
-  }
-
-// ---------- Pi SDK Dev helpers ----------
-(function () {
-  const isPiBrowser = () =>
-    typeof window !== "undefined" &&
-    (window.Pi || /PiBrowser/i.test(navigator.userAgent));
-
-  const el = (id) => document.getElementById(id);
-
-  const updateUI = ({ inited, user }) => {
-    const tools = el("piTools");
-    const initState = el("piInitState");
-    const userState = el("piUserState");
-    const btnInit = el("btnPiInit");
-    const btnSign = el("btnPiSignIn");
-
-    if (!tools) return;
-    tools.classList.toggle("hidden", !isPiBrowser());
-
-    if (initState) initState.textContent = inited ? "inited" : "not inited";
-    if (userState)
-      userState.textContent = user ? `@${user.username}` : "no user";
-
-    if (btnInit) btnInit.disabled = inited; // once inited, disable
-    if (btnSign) btnSign.disabled = !inited || !!user;
-  };
-
-  const loadFromStorage = () => ({
-    inited: localStorage.getItem("pi:init") === "1",
-    user: JSON.parse(localStorage.getItem("pi:user") || "null"),
-  });
-
-  const saveInit = () => localStorage.setItem("pi:init", "1");
-  const saveUser = (u) => localStorage.setItem("pi:user", JSON.stringify(u));
-  const clearPi = () => {
-    localStorage.removeItem("pi:init");
-    localStorage.removeItem("pi:user");
-    updateUI({ inited: false, user: null });
-  };
-
-  async function tryInit() {
-    if (!window.Pi) {
-      console.log("Pi object not present.");
-      alert("Pi SDK not detected. Be sure you opened this in the Pi Browser.");
-      return;
-    }
-    // Use sandbox true for testnet
-    await window.Pi.init({ sandbox: true });
-    saveInit();
-    updateUI({ ...loadFromStorage() });
-    bubble("✅ Pi.init(sandbox:true) done");
-  }
-
-  async function trySignIn() {
-    if (!window.Pi) return;
-    try {
-      bubble("⏳ Calling Pi.authenticate (username)...");
-      const scopes = ["username"];
-      const authRes = await window.Pi.authenticate(
-        scopes,
-        // onIncompletePaymentFound (not used in username-only)
-        (payment) => console.log("incomplete payment", payment)
-      );
-      if (authRes && authRes.user) {
-        saveUser(authRes.user);
-        updateUI({ ...loadFromStorage() });
-        bubble(`👤 Signed in as @${authRes.user.username}`);
-      } else {
-        bubble("⚠️ No user returned");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Auth error: " + (e && e.message ? e.message : e));
-    }
-  }
-
-  // tiny on-screen log bubble (already in your code base; keeping a fallback)
-  function bubble(msg) {
-    try {
-      if (window.logBubble) return window.logBubble(msg);
-    } catch (_) {}
-    console.log("[BuzzPi]", msg);
-  }
-
-  // Wire buttons once DOM is ready
-  window.addEventListener("DOMContentLoaded", () => {
-    if (!isPiBrowser()) return updateUI({ inited: false, user: null });
-
-    const btnInit = el("btnPiInit");
-    const btnSign = el("btnPiSignIn");
-    const btnClear = el("btnPiClear");
-
-    if (btnInit) btnInit.addEventListener("click", tryInit);
-    if (btnSign) btnSign.addEventListener("click", trySignIn);
-    if (btnClear) btnClear.addEventListener("click", () => {
-      clearPi();
-      bubble("🧼 Cleared local Pi session. Reload and re-auth if needed.");
-    });
-
-    // Auto-show correct state
-    updateUI({ ...loadFromStorage() });
-
-    // Optional: auto-init the very first time in Pi Browser
-    const st = loadFromStorage();
-    if (!st.inited) {
-      // Comment this line out if you prefer manual init
-      // tryInit();
-    }
-  });
-})();
-
-// --- DEV switch via ?dev=1 in the URL ---
-(function () {
-  const qs = new URLSearchParams(location.search);
-  if (qs.get("dev") === "1") {
-    const show = () => {
-      const tools = document.getElementById("piTools");
-      if (tools) tools.classList.remove("hidden");
-    };
-    // show tools asap
-    document.addEventListener("DOMContentLoaded", show);
-
-    // optional: auto init + sign in (username scope) when dev=1
-    // uncomment if you want it to run automatically:
-    // setTimeout(async () => {
-    //   try {
-    //     await (window.tryInit ? window.tryInit() : null);
-    //     await (window.trySignIn ? window.trySignIn() : null);
-    //   } catch (e) { console.log(e); }
-    // }, 400);
-  }
-})();
-
-// Long-press honeypot to toggle the Pi tools panel
-(function () {
-  const fab = document.getElementById("fabButton"); // make sure your honey pot has this id
-  if (!fab) return;
-  let t;
-  fab.addEventListener("touchstart", () => {
-    t = setTimeout(() => {
-      const box = document.getElementById("piTools");
-      if (!box) return;
-      box.classList.toggle("hidden");
-    }, 550); // hold ~0.5s
-  });
-  ["touchend", "touchcancel"].forEach(ev =>
-    fab.addEventListener(ev, () => clearTimeout(t))
-  );
-})();
-  // ---------- Initial ----------
+  // default
   showPage("feedPage");
+}
+
+// ---------- Pi SDK: prevent bad anchors ----------
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[href]");
+  if (!a) return;
+  const href = (a.getAttribute("href") || "").trim().toLowerCase();
+  if (href === "window.pi" || href === "http://window.pi" || href === "https://window.pi") {
+    e.preventDefault();
+    logToPanel('⚠️ Blocked navigation to literal "window.pi". Use Pi.authenticate().');
+  }
 });
 
-// ---- Dev Tools chip (shows only in Pi Browser) ----
-(function setupDevTools(){
-  const dev = document.getElementById('dev-tools');
-  if (!dev) return;
+function isPiBrowser() {
+  return typeof window !== "undefined" && !!window.Pi;
+}
 
-  const inPi = typeof window !== 'undefined' && !!window.Pi;
-  if (!inPi) return; // only show inside Pi Browser
+async function onIncompletePaymentFound(payment) {
+  logToPanel("🔎 Incomplete payment found: " + JSON.stringify(payment));
+  // (Optional) Send to backend to complete/void.
+}
 
-  dev.classList.remove('hidden');
-
-  // Wire buttons
-  dev.addEventListener('click', async (e) => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const act = btn.dataset.act;
-
-    try {
-      if (act === 'init') {
-        await window.Pi?.init({ sandbox: true });
-        alert('Pi.init() done');
-      }
-      if (act === 'signin') {
-        const res = await window.Pi?.authenticate({ scopes: ['username'] }, onIncomplete);
-        alert('Signed in as: ' + res?.user?.username);
-      }
-      if (act === 'pay') {
-        // tiny test payment (sandbox)
-        const payment = await window.Pi?.createPayment({
-          amount: "0.01",
-          memo: "BuzzPi test",
-          metadata: { test: true }
-        }, {onReadyForServerApproval, onReadyForServerCompletion, onCancel, onError});
-        console.log('payment', payment);
-        alert('Payment started (sandbox)');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error: ' + (err?.message || err));
+async function doPiLogin() {
+  try {
+    if (!isPiBrowser()) {
+      logToPanel("⚠️ Not in Pi Browser. Open this page inside the Pi Browser and enable Sandbox.");
+      return;
     }
+
+    // Init SDK (sandbox true while testing)
+    await Pi.init({ version: "2.0", sandbox: true });
+    logToPanel("✅ Pi.init complete.");
+
+    const scopes = ["username"]; // keep lightweight for now
+    logToPanel("⏳ Calling Pi.authenticate(username) …");
+    const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+    state.user = auth?.user || null;
+
+    const line = $("#piUserLine");
+    if (state.user?.username && line) {
+      line.textContent = `Signed in as @${state.user.username}`;
+    }
+    logToPanel("✅ Auth success: " + (state.user?.username || "(no username)"));
+  } catch (err) {
+    logToPanel("❌ Auth error: " + (err?.message || err));
+    console.error(err);
+  }
+}
+
+// ---------- Demo controls ----------
+function attachDemoControls() {
+  const plus = $("#devPlus100");
+  if (plus) {
+    plus.addEventListener("click", () => {
+      state.balance += 100;
+      localStorage.setItem("buzzpi.balance", String(state.balance));
+      updateBalance();
+    });
+  }
+  const reset = $("#resetBalance");
+  if (reset) {
+    reset.addEventListener("click", () => {
+      state.balance = 0;
+      localStorage.setItem("buzzpi.balance", "0");
+      updateBalance();
+    });
+  }
+
+  const sound = $("#soundToggle");
+  if (sound) {
+    sound.checked = !!state.soundOn;
+    setSound(sound.checked);
+    sound.addEventListener("change", () => setSound(sound.checked));
+  }
+
+  const loginBtn = $("#piLoginBtn");
+  if (loginBtn) loginBtn.addEventListener("click", doPiLogin);
+
+  const fab = $("#honeypotFab");
+  if (fab) {
+    fab.addEventListener("click", () => {
+      // simple pulse animation demo
+      fab.animate(
+        [
+          { transform: "scale(1)",    filter: "brightness(1)" },
+          { transform: "scale(1.06)", filter: "brightness(1.15)" },
+          { transform: "scale(1)",    filter: "brightness(1)" }
+        ],
+        { duration: 420, easing: "ease-out" }
+      );
+    });
+  }
+}
+
+// ---------- Init ----------
+document.addEventListener("DOMContentLoaded", () => {
+  updateBalance();
+  attachNav();
+  attachDemoControls();
+
+  // Tab buttons (visual only here)
+  $$(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $$(".tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
   });
 
-  // minimal callbacks
-  function onIncomplete(){ console.log('auth incomplete'); }
-  function onReadyForServerApproval(paymentId){ console.log('approve', paymentId); }
-  function onReadyForServerCompletion(paymentId, txId){ console.log('complete', paymentId, txId); }
-  function onCancel(){ console.log('cancelled'); }
-  function onError(err){ console.error(err); }
-
-})();
+  // Initial log
+  logToPanel(`Console ready… 🔎 window.Pi present: ${isPiBrowser()}`);
+});
