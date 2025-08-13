@@ -3,778 +3,317 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>BuzzPi – Gift Lab (v15)</title>
+<title>BuzzPi • Demo</title>
 <style>
   :root{
-    --bg:#0f0f12; --fg:#e6e6ec; --muted:#9aa0a6; --brand:#7c4dff; --accent:#ffd166;
-    --card:#17171b; --card2:#1e1f25; --ok:#34d399; --bad:#ef4444; --warn:#f59e0b;
-  }
-  @media (prefers-color-scheme: light){
-    :root{ --bg:#f7f7fb; --fg:#121219; --muted:#5c6270; --brand:#5b38ff; --accent:#c59000;
-           --card:#ffffff; --card2:#f1f2f6; }
+    --bg:#0c0c10;--panel:#16161d;--panel-2:#1c1c25;
+    --txt:#eaeaf2;--muted:#a7a7b7;--brand:#7b5cff;--accent:#ffb347;
+    --shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+    --radius:14px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;}
-  .app{min-height:100dvh;padding-bottom:92px}
-  header{
-    position:sticky;top:0;z-index:20;padding:14px 16px 10px;background:
-      linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.0)),
-      radial-gradient(1200px 300px at 10% -10%, rgba(124,77,255,.2),transparent 60%),
-      radial-gradient(1200px 300px at 90% -10%, rgba(255,209,102,.18),transparent 60%);
-    backdrop-filter:saturate(130%) blur(4px);
-    display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06);
+  html,body{height:100%}
+  body{
+    margin:0;background:radial-gradient(1200px 700px at 50% -200px,#181830 0%,#0c0c10 55%) fixed;
+    color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   }
-  .logo{width:28px;height:28px;border-radius:6px;background:#f2b84d}
-  .brand{font-weight:800;letter-spacing:.2px}
-  .tabs{display:flex;gap:10px;margin-top:8px;overflow:auto;padding-bottom:2px}
-  .chip{padding:6px 12px;border-radius:14px;background:var(--card2);color:var(--muted);white-space:nowrap;border:1px solid rgba(255,255,255,.06)}
-  .chip.active{background:var(--brand);color:white}
 
-  .screen{display:none;padding:16px}
-  .screen.active{display:block}
-  .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;margin-bottom:14px}
-  .muted{color:var(--muted)}
-  .small{font-size:.9rem}
-
-  .gift-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-  .gift{background:var(--card2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 4px;
-        text-align:center;cursor:pointer;position:relative;user-select:none;transition:transform .12s ease, box-shadow .12s ease}
-  .gift:hover{transform:translateY(-2px)}
-  .gift.selected{animation:breathe 1.2s ease-in-out infinite}
-  @keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
-  .gift .emo{font-size:26px;display:block}
-  .gift .name{font-size:.76rem;margin-top:4px;color:var(--muted)}
-  .gift .price{position:absolute;right:6px;top:6px;background:#0009;color:#fff;padding:2px 6px;border-radius:10px;font-size:.7rem}
-
-  .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
-  .fx-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-
-  @keyframes confettiFall{0%{transform:translateY(-120vh) rotate(0deg)}100%{transform:translateY(120vh) rotate(720deg)}}
-  @keyframes flutter{0%{transform:translate(-50%,-50%) rotate(0) scale(1)}50%{transform:translate(-30%,-65%) rotate(10deg) scale(1.2)}100%{transform:translate(60%,-40%) rotate(-5deg) scale(1)}}
-
-  .shadow{filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-
-  nav.bottom{
-    position:fixed;inset:auto 0 0 0;height:82px;background:rgba(16,16,20,.85);backdrop-filter:blur(8px);
-    border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-around;align-items:center;z-index:40
+  /* Top bar */
+  .topbar{
+    position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(12,12,16,.9),rgba(12,12,16,.6));
+    backdrop-filter: blur(8px); padding: env(safe-area-inset-top) 16px 10px 16px; border-bottom:1px solid rgba(255,255,255,.06);
   }
-  nav .nav-btn{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:.82rem}
-  nav .nav-btn.active{color:#fff}
-  nav .nav-btn .ico{font-size:20px}
+  .toprow{display:flex;align-items:center;gap:12px}
+  .brandDot{width:22px;height:22px;border-radius:6px;background:#f3b93d;box-shadow:var(--shadow)}
+  .brand{font-weight:700;letter-spacing:.2px}
+  .coins{
+    margin-left:auto; display:flex; align-items:center; gap:8px; padding:6px 10px;
+    background:linear-gradient(180deg,#1d1a14,#15120e); border:1px solid rgba(255,200,90,.25);
+    border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.35);
+  }
+  .coin{font-size:18px}
+  .bal{font-weight:700; min-width:56px; text-align:right}
+
+  /* Tabs row */
+  .tabs{display:flex; gap:10px; padding:12px 0 6px 0; overflow:auto}
+  .chip{
+    flex:0 0 auto; padding:10px 14px; border-radius:999px; background:#1a1a22; color:var(--muted);
+    border:1px solid rgba(255,255,255,.05);
+  }
+  .chip.active{background:var(--brand); color:white; box-shadow:0 6px 22px rgba(123,92,255,.35)}
+
+  /* Content */
+  .content{padding:16px; padding-bottom:calc(120px + env(safe-area-inset-bottom));}
+  .card{background:var(--panel); border:1px solid rgba(255,255,255,.07); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:12px}
+  .subtitle{color:var(--muted); font-size:14px}
+
+  /* Bottom nav */
+  .nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:25;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom)); padding-top:10px;
+    background:linear-gradient(180deg,rgba(12,12,16,.1),rgba(12,12,16,.85) 35%,rgba(12,12,16,.95));
+    backdrop-filter: blur(10px); border-top:1px solid rgba(255,255,255,.06);
+  }
+  .navRow{display:flex; align-items:center; justify-content:space-around; gap:6px; padding:0 12px}
+  .navBtn{
+    flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; gap:4px;
+    color:var(--muted); text-decoration:none; font-size:12px; padding:6px 4px; border-radius:10px;
+  }
+  .navBtn .ico{font-size:20px; line-height:1}
+  .navBtn.active{color:#fff}
+
+  /* Floating honeypot */
   .honeypot{
-    position:absolute;left:50%;transform:translateX(-50%);bottom:24px;width:92px;height:92px;border-radius:50%;
-    display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 40%, #ffd166, #ff9f1a);box-shadow:0 12px 30px rgba(255,179,0,.35);
-    border:6px solid rgba(255,255,255,.2);z-index:41
+    position:fixed; left:50%; translate:-50% 0; bottom:calc(64px + env(safe-area-inset-bottom));
+    width:86px;height:86px;border-radius:50%;
+    background:radial-gradient(60% 60% at 50% 40%, #ffdf9a 0%, #ffba4a 45%, #d86a24 100%);
+    box-shadow:0 18px 40px rgba(255,186,74,.35), inset 0 2px 12px rgba(255,255,255,.28);
+    display:grid;place-items:center; z-index:40; border:1px solid rgba(255,255,255,.25)
   }
-  .honeypot .jar{font-size:34px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
-  .honeypot:active{transform:translateX(-50%) scale(.98)}
-  .toast{position:fixed;left:50%;top:10px;transform:translateX(-50%);background:#111c;border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:10px;z-index:60}
-  .toast.bad{background:#2b0d0d;color:#fff;border-color:#ff4d4d}
-  .toast.ok{background:#0e2a1f;border-color:#34d399}
-  .console{background:#000c;color:#d9e3ff;border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem}
-  .link{color:#9abaff;text-decoration:underline;cursor:pointer}
+  .honeypot:before{
+    content:""; position:absolute; inset:-12px; border-radius:50%; background:radial-gradient(50% 50% at 50% 50%, rgba(255,180,64,.35), transparent 70%);
+    filter:blur(8px); z-index:-1;
+  }
+  .honeypot .jar{font-size:36px; filter: drop-shadow(0 5px 10px rgba(0,0,0,.35))}
+  .honeypot:active{scale:.98}
 
-  /* SFX toggle — bottom-right, auto-hide (moved away from balance) */
-  .sfxToggle{
-    position:fixed;
-    right:14px;
-    bottom:calc(110px + env(safe-area-inset-bottom));
-    z-index:10000;
-    width:42px;height:42px;border-radius:9999px;
-    background:#1f2937cc; color:#fff; border:1px solid #374151;
-    box-shadow:0 4px 16px rgba(0,0,0,.25);
-    opacity:0; transform:translateY(8px);
+  /* Sound toggle (small, bottom-right) */
+  .sound{
+    position:fixed; right:16px; bottom:calc(64px + env(safe-area-inset-bottom));
+    z-index:45; padding:8px 10px; border-radius:999px;
+    background:#1a1a22; border:1px solid rgba(255,255,255,.08); color:#fff; font-size:14px;
+    opacity:.9; transition:opacity .25s ease, transform .25s ease;
+    box-shadow:var(--shadow)
+  }
+  .sound.hide{opacity:0; pointer-events:none; transform:translateY(6px)}
+
+  /* Toast */
+  .toast{
+    position:fixed; left:50%; bottom:calc(120px + env(safe-area-inset-bottom));
+    translate:-50% 0; background:#2a2a33; color:#fff; padding:10px 14px; border-radius:10px;
+    border:1px solid rgba(255,255,255,.08); box-shadow:var(--shadow); z-index:50; opacity:0; transform:translateY(6px);
     transition:opacity .25s ease, transform .25s ease;
   }
-  .sfxToggle.on::after{content:'🔊';}
-  .sfxToggle.off::after{content:'🔇';}
-  .sfxToggle.show{ opacity:1; transform:translateY(0); }
-  @media (prefers-color-scheme: light){
-    .sfxToggle{ background:#ffffffcc; color:#111; border-color:#e5e7eb; }
-  }
+  .toast.show{opacity:1; transform:translateY(0)}
 </style>
 </head>
 <body>
-<!-- SFX toggle -->
-<button id="sfxToggle" class="sfxToggle" title="Sound Effects"></button>
 
-<div class="app">
-  <header>
-    <div class="logo"></div>
-    <div>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="toprow">
+      <div class="brandDot" aria-hidden="true"></div>
       <div class="brand">BuzzPi</div>
-      <div class="tabs" id="homeTabs">
-        <div class="chip active">Following</div>
-        <div class="chip">Popular</div>
-        <div class="chip">Nearby</div>
-        <div class="chip">New</div>
-      </div>
-    </div>
-    <div style="margin-left:auto;font-weight:800" id="balance">0</div>
-  </header>
 
-  <!-- Screens -->
-  <section class="screen active" id="scrHome">
-    <div class="card">
-      <div style="font-weight:800">Welcome 👋</div>
-      <div class="muted small">Tap <b>Gifts</b> to try BuzzCoin gifts, FX and SFX. First tap anywhere to unlock audio.</div>
-    </div>
-    <div class="card">
-      <div style="font-weight:800;margin-bottom:8px">If anything looks cached</div>
-      <div class="muted small">Hard-refresh with <span class="link" id="forceReload">?v=<span id="vNum">15</span></span>.</div>
-    </div>
-  </section>
-
-  <section class="screen" id="scrGifts">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:800">Gifts</div>
-          <div class="muted small">Tap to send. Long-press for rapid combo.</div>
-        </div>
-        <div class="row">
-          <button class="btn ghost" id="watchAd">Watch ad (+1)</button>
-          <button class="btn ghost" id="devAdd">Dev +50</button>
-        </div>
+      <div class="coins" id="coinBadge" title="BuzzCoin balance">
+        <span class="coin">🪙</span>
+        <span class="bal" id="balance">300</span>
       </div>
     </div>
 
-    <div class="card">
-      <div class="tabs" id="giftTabs">
-        <div class="chip active" data-cat="common">Common</div>
-        <div class="chip" data-cat="rare">Rare</div>
-        <div class="chip" data-cat="billion">Billionaire</div>
+    <!-- tabs / segments -->
+    <div class="tabs" id="tabs">
+      <button class="chip active">Following</button>
+      <button class="chip">Popular</button>
+      <button class="chip">Nearby</button>
+      <button class="chip">New</button>
+    </div>
+  </div>
+
+  <!-- Content area -->
+  <main class="content" id="content">
+    <section class="card">
+      <h2 style="margin:0 0 6px">Wallet</h2>
+      <p class="subtitle">This demo wallet only tracks local BuzzCoin for testing gifts.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+        <button class="chip" id="devUp">Dev +100</button>
+        <button class="chip" id="reset">Reset balance</button>
       </div>
-      <div id="giftWrap" style="margin-top:12px"></div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div style="font-weight:800">Console</div>
-      <div class="console" id="log">Ready.</div>
-    </div>
-  </section>
+    <section class="card">
+      <h3 style="margin:0 0 8px">Gifts</h3>
+      <p class="subtitle">Open the Gifts panel from the bottom bar to try effects.</p>
+    </section>
+  </main>
 
-  <section class="screen" id="scrWallet">
-    <div class="card">
-      <div style="font-weight:800">Wallet</div>
-      <div class="muted small">This demo wallet only tracks local BuzzCoin for testing gifts.</div>
+  <!-- Bottom navigation -->
+  <nav class="nav" aria-label="Primary">
+    <div class="navRow" id="navRow">
+      <a class="navBtn active" data-view="home" href="javascript:void(0)">
+        <div class="ico">🏠</div><div>Home</div>
+      </a>
+      <a class="navBtn" data-view="gifts" href="javascript:void(0)">
+        <div class="ico">🎁</div><div>Gifts</div>
+      </a>
+      <a class="navBtn" data-view="wallet" href="javascript:void(0)">
+        <div class="ico">💰</div><div>Wallet</div>
+      </a>
+      <a class="navBtn" data-view="profile" href="javascript:void(0)">
+        <div class="ico">👤</div><div>Profile</div>
+      </a>
     </div>
-    <div class="card">
-      <div class="row">
-        <button class="btn" id="devAdd100">Dev +100</button>
-        <button class="btn ghost" id="devReset">Reset balance</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="screen" id="scrProfile">
-    <div class="card">
-      <div style="font-weight:800">Profile</div>
-      <div class="muted small">Placeholder — we’ll wire this to real accounts later.</div>
-    </div>
-  </section>
-
-  <!-- FX overlay -->
-  <div class="fx-layer" id="fx"></div>
-
-  <!-- Bottom nav -->
-  <nav class="bottom">
-    <button class="nav-btn" data-target="scrHome"><div class="ico">🏠</div>Home</button>
-    <button class="nav-btn" data-target="scrGifts"><div class="ico">🎁</div>Gifts</button>
-    <button class="honeypot" id="goLive" title="Go Live (mock)"><div class="jar">🍯</div></button>
-    <button class="nav-btn" data-target="scrWallet"><div class="ico">💰</div>Wallet</button>
-    <button class="nav-btn" data-target="scrProfile"><div class="ico">👤</div>Profile</button>
   </nav>
-</div>
 
-<div class="toast" id="toast" style="display:none"></div>
+  <!-- Floating honeypot (go live / special action) -->
+  <button class="honeypot" id="honeypot" aria-label="Start Live">
+    <span class="jar">🍯</span>
+  </button>
 
-<!-- Inline Phoenix JSON (also fetched if effects/phoenix_rebirth.json exists) -->
-<script type="application/json" id="phoenix-config">
-{
-  "id": "gift.phoenix_rebirth",
-  "version": "1.0.0",
-  "lod": ["lite", "standard", "cinematic"],
-  "duration": 8000,
-  "beats": [
-    {"t": 0,    "actions": ["grade:warm_in","vignette:0.25","bloom:0.4","sfx:rumble_in","rimlight:on"]},
-    {"t": 600,  "actions": ["ignite_sigil","particles:sparks_burst","sfx:impact","heat:on"]},
-    {"t": 2200, "actions": ["phoenix:enter_from_bg","dof:focus_near","shake:0.35@60ms","sfx:whoosh_in"]},
-    {"t": 4200, "actions": ["phoenix:crown_form","banner:show","sfx:choir_hit","bloom:0.8"]},
-    {"t": 6000, "actions": ["embers:tail","heat:fade_out","grade:neutral_out","banner:hold"]},
-    {"t": 8000, "actions": ["end"]}
-  ],
-  "combo": { "window": 8000, "tiers": [ { "min": 2, "effect": "wingspan_plus" }, { "min": 3, "effect": "loop_second_pass" } ] }
-}
-</script>
+  <!-- Sound toggle -->
+  <button class="sound hide" id="soundBtn" aria-label="Sound on/off">🔊 On</button>
+
+  <div class="toast" id="toast">Saved</div>
 
 <script>
-/* ------------- helpers/state/UI ------------- */
-const $ = sel => document.querySelector(sel);
-const el = id => document.getElementById(id);
-const log = (...a)=>{ const L=el('log'); L.textContent = a.join(' '); L.scrollTop=L.scrollHeight; };
-const toast = (msg,type='ok',ms=1800)=>{
-  const t = el('toast'); t.className = 'toast '+type; t.textContent = msg; t.style.display='block';
-  clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',ms);
-};
-const STATE = { balance: 300, ad: {max:5, cooldown:5, count:0, last:0}, holdTimer: null, selectedGift: null };
-const EL = { screens:{ scrHome:el('scrHome'), scrGifts:el('scrGifts'), scrWallet:el('scrWallet'), scrProfile:el('scrProfile') }, fx:el('fx'), giftWrap:el('giftWrap'), balance:el('balance') };
-function show(id){
-  Object.values(EL.screens).filter(Boolean).forEach(s=>s.classList.remove('active'));
-  EL.screens[id]?.classList.add('active');
-  document.querySelectorAll('nav .nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target===id));
-}
-document.querySelectorAll('nav .nav-btn').forEach(b=> b.addEventListener('click', ()=> show(b.dataset.target)));
-el('forceReload')?.addEventListener('click', ()=>{
-  const v = Number(el('vNum').textContent||15)+1; location.href = location.origin + '/?v='+v;
-});
-function fmt(n){ return n.toLocaleString(); }
-function updateBalance(){ EL.balance.textContent = fmt(STATE.balance); }
-updateBalance();
+(function(){
+  const $ = (sel,root=document)=>root.querySelector(sel);
+  const $$ = (sel,root=document)=>[...root.querySelectorAll(sel)];
+  const safe = (fn)=>{ try{ return fn() }catch(e){ console.debug(e); return null } };
 
-/* ------------- catalog/render ------------- */
-const CATALOG = {
-  common: [
-    {id:'party', emo:'🥳', name:'Party', price:1},
-    {id:'hearts', emo:'🥰', name:'Hearts', price:1},
-    {id:'love', emo:'😍', name:'Love', price:1},
-    {id:'yum', emo:'😋', name:'Yum', price:1},
-    {id:'hug', emo:'🤗', name:'Hug', price:1},
-    {id:'starry', emo:'🤩', name:'Starry', price:1},
-    {id:'rich', emo:'🤑', name:'Making it', price:1},
-    {id:'lolly', emo:'🍭', name:'Lolly', price:2},
-    {id:'candy', emo:'🍬', name:'Candy', price:2},
-    {id:'choc', emo:'🍫', name:'Choco', price:2},
-    {id:'martini', emo:'🍸', name:'Martini', price:5},
-    {id:'apple', emo:'🍎', name:'Apple', price:5},
-    {id:'beer', emo:'🍺', name:'Beer', price:5},
-    {id:'rose', emo:'🌹', name:'Rose', price:10},
-    {id:'sakura', emo:'🌸', name:'Sakura', price:10},
-    {id:'sparkle', emo:'✨️', name:'Sparkles', price:10},
-    {id:'bouquet', emo:'💐', name:'Bouquet', price:20},
-    {id:'cheers', emo:'🍻', name:'Cheers', price:20},
-    {id:'clap', emo:'👏', name:'Clap', price:20},
-    {id:'kiss', emo:'💋', name:'Kiss', price:20},
-  ],
-  rare: [
-    {id:'butterfly', emo:'🦋', name:'Butterfly', price:50},
-    {id:'storm', emo:'🌩', name:'Storm', price:50},
-    {id:'sun', emo:'🌤', name:'Sunbeam', price:50},
-    {id:'rainbow', emo:'🌈', name:'Rainbow', price:50},
-    {id:'snow', emo:'❄️', name:'Snow', price:50},
-    {id:'teddy', emo:'🧸', name:'Teddy', price:100},
-    {id:'bunny', emo:'🐇', name:'Bunny', price:100},
-    {id:'champ', emo:'🍾', name:'Champagne', price:100},
-    {id:'crown', emo:'👑', name:'Crown', price:100},
-    {id:'wine', emo:'🍷', name:'Wine', price:100},
-    {id:'flutes', emo:'🥂', name:'Flutes', price:100},
-    {id:'jadeLambo', emo:'🚗', name:'Jade Lamborghini', price:500},
-    {id:'crystalPlane', emo:'✈️', name:'Crystal Aeroplane', price:500},
-    {id:'goldHummer', emo:'🚙', name:'Golden Hummer', price:500},
-    {id:'yacht', emo:'🛥️', name:'Yacht', price:500},
-  ],
-  billion: [
-    {id:'phoenix', emo:'🔥', name:'Fiery Phoenix', price:1000},
-    {id:'unicorn', emo:'🦄', name:'Racing Unicorn', price:1000},
-    {id:'castle', emo:'🏰', name:'Crystal Castle', price:1000},
-    {id:'treasure', emo:'💰', name:'Pirate Chest', price:1000},
-    {id:'skyMansion', emo:'🏙️', name:'Mansion in the Sky', price:5000},
-    {id:'mermaid', emo:'🧜‍♀️', name:'Mermaid', price:5000},
-    {id:'cupids', emo:'💘', name:'Cupids', price:5000},
-    {id:'elfQueen', emo:'🧝‍♀️', name:'Elf Queen', price:5000},
-    {id:'goldJet', emo:'🛩️', name:'Golden Private Jet', price:10000},
-    {id:'rolex', emo:'⌚', name:'Diamond Rolex', price:10000},
-    {id:'chariots', emo:'🐎', name:'Chariots of Horses', price:10000},
-  ]
-};
-function renderCategory(cat){
-  const wrap = document.createElement('div'); wrap.className='gift-grid';
-  CATALOG[cat].forEach(g=>{
-    const d=document.createElement('div');
-    d.className='gift'; d.dataset.id=g.id; d.dataset.price=g.price; d.dataset.cat=cat;
-    d.innerHTML=`<div class="emo">${g.emo}</div><div class="name">${g.name}</div><div class="price">${g.price}</div>`;
-    d.addEventListener('click', ()=>{
-      document.querySelectorAll('.gift').forEach(x=>x.classList.remove('selected'));
-      d.classList.add('selected'); STATE.selectedGift = g; sendGift(g);
-    });
-    let pressT;
-    d.addEventListener('pointerdown', ()=>{
-      pressT=setTimeout(()=>{ STATE.holdTimer=setInterval(()=> sendGift(g,true), 280); }, 350);
-    });
-    const stopHold=()=>{ clearTimeout(pressT); if(STATE.holdTimer){clearInterval(STATE.holdTimer); STATE.holdTimer=null;} };
-    d.addEventListener('pointerup',stopHold); d.addEventListener('pointerleave',stopHold); d.addEventListener('pointercancel',stopHold);
-    wrap.appendChild(d);
-  });
-  EL.giftWrap.innerHTML=''; EL.giftWrap.appendChild(wrap);
-}
-renderCategory('common');
-el('giftTabs').addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip'); if(!chip) return;
-  el('giftTabs').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  chip.classList.add('active'); renderCategory(chip.dataset.cat);
-});
+  /* State */
+  let balance = 300;
+  let soundOn = true;
+  const balanceEl = $('#balance');
+  const toast = $('#toast');
+  const soundBtn = $('#soundBtn');
 
-/* ------------- ads/dev wallet ------------- */
-function todayKey(){ const d=new Date(); return `ad-${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-function loadAdState(){ const k=todayKey(); const obj=JSON.parse(localStorage.getItem(k)||'{"count":0,"last":0}'); STATE.ad.count=obj.count||0; STATE.ad.last=obj.last||0; }
-function saveAdState(){ const k=todayKey(); localStorage.setItem(k, JSON.stringify({count:STATE.ad.count,last:STATE.ad.last})); }
-loadAdState();
-el('watchAd').addEventListener('click', ()=>{
-  const now=Date.now()/1000;
-  if(STATE.ad.count>=5){ toast("Daily ad limit reached (5).", "bad"); return; }
-  if(now-STATE.ad.last<5){ toast(`Please wait ${Math.ceil(5-(now-STATE.ad.last))}s…`,"warn"); return; }
-  toast("Playing ad… (+1)", "ok", 1200);
-  STATE.ad.last=now; STATE.ad.count++; saveAdState();
-  setTimeout(()=>{ STATE.balance+=1; updateBalance(); toast("1 BuzzCoin added!","ok"); }, 500);
-});
-el('devAdd').addEventListener('click', ()=>{ STATE.balance+=50; updateBalance(); toast("+50 test coins","ok"); });
-el('devAdd100').addEventListener('click', ()=>{ STATE.balance+=100; updateBalance(); toast("+100","ok"); });
-el('devReset').addEventListener('click', ()=>{ STATE.balance=0; updateBalance(); toast("Balance reset","warn"); });
-
-/* ------------- spend/send ------------- */
-function spend(n){ if(STATE.balance<n){ toast("Not enough BuzzCoin","bad"); return false; } STATE.balance-=n; updateBalance(); return true; }
-function sendGift(g, combo=false){
-  if(!spend(g.price)) return;
-  animateGift(g, combo);
-  log(`Sent ${g.name} (−${g.price}). Balance ${STATE.balance}.`);
-  // re-peek SFX button after each send
-  showSfxTemporarily(2000);
-}
-window.sendGift = sendGift; // for toggle auto-hide hook
-
-/* ------------- FX primitives ------------- */
-function addFx(html, opts={}){
-  const n=document.createElement('div'); n.className='fx-item shadow'; n.innerHTML=html;
-  if(opts.style) Object.assign(n.style, opts.style);
-  EL.fx.appendChild(n);
-  setTimeout(()=>n.remove(), (opts.ms??5000));
-  return n;
-}
-function lensTint(color='rgba(255,180,80,.25)', ms=800){
-  const n=document.createElement('div'); n.style.cssText=`position:absolute;inset:0;background:${color};mix-blend-mode:screen;opacity:.0`;
-  EL.fx.appendChild(n);
-  n.animate([{opacity:0},{opacity:1},{opacity:0}], {duration:ms, easing:'ease-in-out'}).onfinish=()=>n.remove();
-}
-function confetti(ms=1200){
-  for(let i=0;i<30;i++){
-    const s=document.createElement('div'); s.style.cssText=`position:absolute;left:${Math.random()*100}%;top:-10vh;width:6px;height:10px;background:hsl(${Math.random()*360} 90% 60%);animation:confettiFall ${ms}ms linear forwards;`;
-    EL.fx.appendChild(s); setTimeout(()=>s.remove(), ms+200);
+  function updateBalance(){
+    if(balanceEl) balanceEl.textContent = String(balance);
   }
-}
-
-/* ------------- SFX engine + toggle (bottom-right, auto-hide) ------------- */
-const SFX = (() => {
-  let enabled = localStorage.getItem('buzz_sfx') !== 'off';
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  const ctx = new Ctx();
-  const master = ctx.createGain(); master.gain.value = 0.35; master.connect(ctx.destination);
-  function resume(){ if (ctx.state === 'suspended') ctx.resume(); }
-  window.addEventListener('pointerdown', () => { resume(); showSfxTemporarily(2500); }, {once:true});
-
-  function chain(gain=0.22){ const g=ctx.createGain(); g.gain.value=gain; g.connect(master); return g; }
-  function osc(f, dur, type='sine', g=0.22){
-    if(!enabled) return; resume();
-    const t=ctx.currentTime, o=ctx.createOscillator(), gn=chain(g);
-    o.type=type; o.frequency.setValueAtTime(f,t); o.connect(gn); o.start(t); o.stop(t+dur);
+  function showToast(msg='Saved'){
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1500);
   }
-  function noise(dur, kind='white', g=0.22, bp=null){
-    if(!enabled) return; resume();
-    const len = ctx.sampleRate * dur, b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
-    for(let i=0;i<len;i++){
-      const n = Math.random()*2-1;
-      d[i] = kind==='brown' ? ((d[i-1]||0) + 0.02*n)/1.02
-           : kind==='pink'  ? ((d[i-1]||0)*0.98 + 0.02*n)
-           : n;
-    }
-    const src = ctx.createBufferSource(); src.buffer=b;
-    let out = chain(g);
-    if (bp){ const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=bp; src.connect(f).connect(out); }
-    else { src.connect(out); }
-    src.start(); src.stop(ctx.currentTime+dur);
-  }
-  const api = {
-    enabled:()=>enabled,
-    toggle(){ enabled=!enabled; localStorage.setItem('buzz_sfx', enabled?'on':'off'); },
-    whoosh(){ noise(0.5,'white',0.35,800); },
-    impact(){ osc(80,0.12,'sine',0.45); noise(0.14,'brown',0.3,160); },
-    coins(){ [1200,1500,1800].forEach((f,i)=>setTimeout(()=>osc(f/2,0.12,'triangle',0.25), i*60)); },
-    choir(){ [440,554,659].forEach((f,i)=>setTimeout(()=>osc(f,0.6,'sine',0.12), i*80)); },
-    rumble(ms=800){ noise(ms/1000,'brown',0.25,90); },
-    jet(){ noise(0.9,'pink',0.35,400); },
-    engineRev(){ osc(120,0.4,'sawtooth',0.22); noise(0.3,'brown',0.25,120); },
-    gallop(){ for(let i=0;i<6;i++) setTimeout(()=>api.impact(), i*220); },
-    twinkle(){ [1800,2200,2600].forEach((f,i)=>setTimeout(()=>osc(f,0.08,'sine',0.18), i*80)); },
-    chime(){ [1200,1800,2400].forEach((f,i)=>setTimeout(()=>osc(f,0.18,'triangle',0.22), i*90)); },
-    pop(){ osc(520,0.05,'sine',0.22); osc(260,0.07,'sine',0.16); },
-    sparkle(){ api.twinkle(); },
-    kiss(){ osc(1500,0.12,'sine',0.22); noise(0.10,'white',0.08,2800); },
-    clap2(){ for(let i=0;i<3;i++) setTimeout(()=>noise(0.07,'white',0.35,1200), i*120); },
-    cheers(){ [1800,2400].forEach((f,i)=>setTimeout(()=>osc(f,0.10,'triangle',0.26), i*90)); },
-    pour(){ noise(0.55,'pink',0.14,900); },
-    fizz(){ noise(0.55,'white',0.18,2200); },
-    thunder(){ noise(1.2,'brown',0.35,70); osc(60,0.35,'sine',0.22); },
-    wind(){ noise(0.8,'pink',0.16,400); },
-    snow(){ api.twinkle(); noise(0.6,'white',0.06,4500); },
-    cork(){ api.impact(); setTimeout(()=>api.whoosh(),90); },
-    bell(){ osc(1300,0.28,'triangle',0.20); osc(650,0.36,'sine',0.12); }
-  };
 
-  /* toggle button paint + auto-hide */
-  const btn = document.getElementById('sfxToggle');
-  let sfxHideTimer = null;
-  window.showSfxTemporarily = function(ms=3000){
-    if(!btn) return;
-    btn.classList.add('show');
-    clearTimeout(sfxHideTimer);
-    sfxHideTimer = setTimeout(()=>btn.classList.remove('show'), ms);
-  };
-  if (btn){
-    const paint = () => { btn.classList.toggle('on', api.enabled()); btn.classList.toggle('off', !api.enabled()); };
-    paint();
-    btn.addEventListener('click', ()=>{ api.toggle(); paint(); showSfxTemporarily(2500); });
-
-    // Reappear briefly on user activity
-    ['pointermove','pointerdown','keydown','visibilitychange'].forEach(evt=>{
-      window.addEventListener(evt, ()=>showSfxTemporarily(2000));
-    });
-
-    // Initial peek
-    setTimeout(()=>showSfxTemporarily(2200), 500);
-  }
-  return api;
-})();
-
-/* ------------- Phoenix loader + interpreter ------------- */
-const VERSION = 15;
-const EFFECT_CACHE = {};
-async function loadEffectJson(name){
-  if (EFFECT_CACHE[name]) return EFFECT_CACHE[name];
-  try{
-    const r = await fetch(`/effects/${name}.json?v=${VERSION}`);
-    if (!r.ok) throw 0;
-    const j = await r.json(); EFFECT_CACHE[name] = j; return j;
-  }catch(e){
-    const tag = document.getElementById('phoenix-config');
-    return tag ? JSON.parse(tag.textContent) : null;
-  }
-}
-function runPhoenix(script){
-  if (!script) return;
-  const beats = script.beats || []; const timers=[];
-  const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
-  function doActions(list){
-    list.forEach(a=>{
-      if (a.startsWith('sfx:')){
-        const k=a.slice(4); if (k==='whoosh_in') SFX.whoosh();
-        else if (k==='impact') SFX.impact();
-        else if (k==='choir_hit') SFX.choir();
-        else if (k==='rumble_in') SFX.rumble(900);
-        return;
-      }
-      if (a==='ignite_sigil') lensTint('rgba(255,150,80,.20)', 700);
-      else if (a==='particles:sparks_burst'){
-        for(let i=0;i<40;i++){
-          const s=addFx(`<div style="width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#ffd,#f80)"></div>`,{ms:900});
-          s.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${(Math.random()*2-1)*180}px,${(Math.random()*-1)*140}px)`,opacity:0}],{duration:900});
-        }
-      }
-      else if (a.startsWith('phoenix:') && a.includes('enter')){
-        const p=addFx(`<div style="font-size:120px;filter:drop-shadow(0 20px 30px rgba(0,0,0,.5))">🦅</div>`, {ms:script.duration});
-        p.animate([{transform:'translate(-60vw,30vh) scale(.8) rotate(-8deg)'},
-                   {transform:'translate(0,0) scale(1) rotate(0deg)'},
-                   {transform:'translate(60vw,-20vh) scale(1.05) rotate(6deg)'}],
-                  {duration:4200,easing:'ease-in-out'});
-      }
-      else if (a==='phoenix:crown_form'){
-        const crown=addFx(`<div style="font-size:72px">👑</div>`, {ms:1500});
-        crown.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:0},{transform:'translate(-50%,-90%) scale(1.2)',opacity:1},{opacity:0}],{duration:1400});
-      }
-      else if (a==='embers:tail'){
-        for(let i=0;i<30;i++){
-          const e=addFx(`<div style="width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#ffb,#f60)"></div>`, {ms:1200});
-          e.animate([{transform:'translate(0,0)',opacity:.9},{transform:`translate(${(Math.random()*2-1)*140}px, ${40+Math.random()*120}px)`,opacity:0}],{duration:1100,delay:i*20});
-        }
-      }
+  /* Top chips */
+  const tabs = $('#tabs');
+  if(tabs){
+    tabs.addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip');
+      if(!chip) return;
+      $$('.chip', tabs).forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      showToast(chip.textContent.trim());
     });
   }
-  beats.forEach(b=>at(b.t,()=>doActions(b.actions||[])));
-  at(script.duration||8000, ()=>timers.forEach(clearTimeout));
-}
 
-/* ------------- subtle SFX mapper (common/rare) ------------- */
-function sfxForGift(g){
-  const e = g.emo, p = g.price || 1;
-  if (p === 1){ if (e==='🥳') return SFX.pop(); if (e==='😋') return (SFX.pop(),SFX.sparkle()); if (e==='🥰'||e==='😍') return SFX.sparkle(); if (e==='🤗') return SFX.pop(); if (e==='🤩') return SFX.sparkle(); if (e==='🤑') return SFX.coins(); return SFX.pop(); }
-  if (p === 2){ if (['🍭','🍬','🍫'].includes(e)) return (SFX.pop(),SFX.chime()); return SFX.pop(); }
-  if (p === 5){ if (e==='🍸') return (SFX.pour(),SFX.chime()); if (e==='🍺') return SFX.pour(); if (e==='🍎') return SFX.pop(); return SFX.pop(); }
-  if (p === 10){ if (['🌹','🌸','✨️','✨'].includes(e)) return (SFX.chime(),SFX.sparkle()); return SFX.chime(); }
-  if (p === 20){ if (e==='💐') return (SFX.chime(),SFX.sparkle()); if (e==='🍻') return SFX.cheers(); if (e==='👏') return SFX.clap2(); if (e==='💋') return SFX.kiss(); return SFX.chime(); }
-  if (p === 50){ if (e==='🦋') return SFX.twinkle(); if (e==='🌩') return SFX.thunder(); if (e==='🌤') return SFX.wind(); if (e==='🌈') return SFX.twinkle(); if (e==='❄️') return SFX.snow(); return SFX.twinkle(); }
-  if (p === 100){ if (e==='🧸') return SFX.pop(); if (e==='🐇') return SFX.whoosh(); if (e==='🍾') return (SFX.cork(),SFX.fizz()); if (e==='👑') return SFX.chime(); if (e==='🍷'||e==='🥂') return (SFX.pour(),SFX.cheers()); return SFX.chime(); }
-  if (p === 500){ if (g.id?.includes('Lambo')||g.id?.includes('car')||e==='🚗'||e==='🚙') return SFX.engineRev(); if (g.id?.includes('Plane')||e==='✈️') return SFX.jet(); if (g.id?.includes('yacht')||e==='🛥️') return (SFX.wind(),SFX.whoosh()); return SFX.whoosh(); }
-}
+  /* Wallet demo buttons */
+  safe(()=>$('#devUp').addEventListener('click', ()=>{ balance+=100; updateBalance(); showToast('+100 BuzzCoin') }));
+  safe(()=>$('#reset').addEventListener('click', ()=>{ balance=0; updateBalance(); showToast('Balance reset') }));
 
-/* ------------- animate gifts (all billionaire wired) ------------- */
-function animateGift(g, combo){
-  if ((g.price||1) < 1000) sfxForGift(g); // small/rare subtle SFX
+  /* Bottom nav */
+  const navRow = $('#navRow');
+  if(navRow){
+    navRow.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.navBtn');
+      if(!btn) return;
+      $$('.navBtn', navRow).forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const view = btn.dataset.view;
+      route(view);
+    });
+  }
 
-  const dur =
-    g.price >= 10000 ? 9000 :
-    g.price >= 5000  ? 8500 :
-    g.price >= 1000  ? 8000 :
-    g.price >= 500   ? 6000 : 5000;
-
-  const heavy = g.price >= 1000;
-
-  switch(g.id){
-    case 'party': {
-      confetti(1600);
-      const face = addFx(`<div style="font-size:72px">🥳</div>`, {ms:1600});
-      face.animate(
-        [{transform:'translate(-50%,-50%) scale(1)'},
-         {transform:'translate(-50%,-48%) scale(1.15)'},
-         {transform:'translate(-50%,-50%) scale(1)'}],
-        {duration:1400,easing:'ease-in-out'}
-      ); break;
-    }
-    case 'yum': {
-      const n=addFx(`<div style="font-size:84px">😋</div>`, {ms:1500});
-      n.animate(
-        [{transform:'translate(-50%,-50%)'},
-         {transform:'translate(-50%,-53%)'},
-         {transform:'translate(-50%,-50%)'}],
-        {duration:1200,easing:'ease-in-out'}
-      ); break;
-    }
-    case 'butterfly': {
-      const n=addFx(`<div style="font-size:70px">🦋</div>`, {ms:dur});
-      n.style.animation='flutter 5200ms ease-in-out forwards';
-      const glow=addFx(`<div style="width:220px;height:220px;border-radius:50%;box-shadow:0 0 60px 10px rgba(147,197,253,.35) inset"></div>`, {ms:1200,style:{opacity:.6}});
-      glow.animate(
-        [{opacity:0,transform:'translate(-50%,-50%) scale(.6)'},
-         {opacity:.6,transform:'translate(-50%,-50%) scale(1)'},
-         {opacity:0,transform:'translate(-50%,-50%) scale(1.2)'}],
-        {duration:1200}
-      ); break;
-    }
-    case 'goldHummer': {
-      const car=addFx(`<div style="font-size:72px;filter:drop-shadow(0 14px 20px rgba(0,0,0,.5))">🚙</div>`, {ms:dur,style:{bottom:'12%',left:'-10%'}});
-      car.style.top='auto'; car.style.transform='translate(0,0)';
-      SFX.engineRev();
-      car.animate(
-        [{transform:'translate(-10vw,0) rotate(-8deg)'},
-         {transform:'translate(40vw,-2vh) rotate(2deg)'},
-         {transform:'translate(110vw,1.5vh) rotate(3deg)'}],
-        {duration:5200,easing:'cubic-bezier(.25,.8,.2,1)'}
-      );
-      for(let i=0;i<12;i++){
-        const puff=addFx(`<div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#fff8,transparent 60%)"></div>`,
-                         {ms:1600,style:{left:'35%',bottom:'12%'}});
-        puff.style.top='auto';
-        puff.animate([{transform:'translate(0,0) scale(.6)',opacity:.7},{transform:'translate(20px,-40px) scale(1.4)',opacity:0}],{duration:1200,delay:i*120});
-      } break;
-    }
-
-    /* ===== Billionaire set ===== */
-    case 'phoenix': { loadEffectJson('phoenix_rebirth').then(runPhoenix); break; }
-
-    case 'unicorn': {
-      lensTint('rgba(255,255,255,.18)', 1600);
-      const n=addFx(`<div style="font-size:100px">🦄</div>`, {ms:dur});
-      SFX.whoosh(); SFX.twinkle();
-      n.animate(
-        [{transform:'translate(-60vw,30vh) scale(1.2) rotate(-12deg)'},
-         {transform:'translate(0,0) scale(1) rotate(0deg)'},
-         {transform:'translate(60vw,-20vh) scale(1.1) rotate(6deg)'}],
-        {duration:6200,easing:'ease-in-out'}
-      );
-      for(let i=0;i<40;i++){
-        const s=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.9)"></div>`, {ms:2000});
-        s.animate(
-          [{transform:`translate(${-300+Math.random()*100}px, ${120-Math.random()*40}px)`,opacity:0},
-           {transform:'translate(0,0)',opacity:1},
-           {transform:`translate(${200+Math.random()*120}px, ${-120+Math.random()*40}px)`,opacity:0}],
-          {duration:1800,delay:i*40}
-        );
-      } break;
-    }
-
-    case 'castle': {
-      lensTint('rgba(120,160,255,.18)', 1200);
-      const mist=addFx(`<div style="width:120vw;height:30vh;background:radial-gradient(60% 40% at 50% 50%, rgba(180,200,255,.25), transparent 70%);"></div>`,
-                       {ms:2200,style:{bottom:'-6%',left:'50%'}});
-      mist.style.top='auto';
-      const c=addFx(`<div style="font-size:110px">🏰</div>`, {ms:dur});
-      c.animate([{transform:'translate(-50%,30vh) scale(.85)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1600,easing:'ease-out'});
-      setTimeout(()=>SFX.choir(), 1600);
-      for(let i=0;i<20;i++){
-        const g=addFx(`<div style="width:8px;height:8px;border-radius:2px;background:linear-gradient(45deg,#fff,#9cf)"></div>`,{ms:1400});
-        g.animate([{transform:`translate(${(Math.random()*2-1)*60}px, ${(Math.random()*2-1)*60}px) scale(.6)`,opacity:.0},
-                   {transform:`translate(${(Math.random()*2-1)*30}px, ${(Math.random()*2-1)*30}px) scale(1.2)`,opacity:1},
-                   {opacity:0}],{duration:1200,delay:i*60});
-      } break;
-    }
-
-    case 'treasure': {
-      const chest=addFx(`<div style="width:180px;height:110px;border-radius:12px;background:linear-gradient(#6d3b10,#3c2309);border:3px solid #d2a04d;position:relative;overflow:hidden">
-        <div style="position:absolute;inset:0 0 auto 0;height:60px;background:linear-gradient(#8a4e12,#5a310c);border-bottom:3px solid #d2a04d;transform-origin:bottom center"></div>
-      </div>`, {ms:dur});
-      const lid = chest.firstElementChild;
-      setTimeout(()=>SFX.impact(), 500);
-      lid.animate([{transform:'rotate(0deg)'},{transform:'rotate(-75deg)'}],{duration:700,delay:600,easing:'cubic-bezier(.2,.9,.2,1)'});
-      setTimeout(()=>{
-        SFX.coins();
-        for(let i=0;i<80;i++){
-          const coin=addFx(`<div style="width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ffd166 60%,#c88a00);"></div>`,{ms:1600});
-          coin.animate(
-            [{transform:'translate(0,0) scale(.8)',opacity:1},
-             {transform:`translate(${(Math.random()*2-1)*200}px, ${-80-Math.random()*120}px) scale(1.1)`,opacity:.9},
-             {transform:`translate(${(Math.random()*2-1)*240}px, ${120+Math.random()*80}px) scale(1.1)`,opacity:0}],
-            {duration:1500,delay:i*12}
-          );
-        }
-        lensTint('rgba(255,220,120,.28)',800);
-      },800); break;
-    }
-
-    case 'skyMansion': {
-      for(let i=0;i<6;i++){
-        const size=180+Math.random()*160, y=20+Math.random()*40, t=5000+Math.random()*2000;
-        const cloud=addFx(`<div style="width:${size}px;height:${size*0.55}px;border-radius:9999px;background:radial-gradient(60% 60% at 40% 40%, #fff, #dfe7ff);filter:blur(1px)"></div>`,
-                          {ms:dur,style:{top:`${y}%`,left:`${-20 - Math.random()*20}%`,opacity:.85}});
-        cloud.animate([{transform:'translateX(0)'},{transform:'translateX(140vw)'}],{duration:t,easing:'linear'});
-      }
-      for(let i=0;i<5;i++){
-        const beam=addFx(`<div style="width:14px;height:60vh;background:linear-gradient(#ffd166 20%, transparent);opacity:.25"></div>`,
-                          {ms:2400,style:{top:'-10%',left:`${30+i*8}%`}});
-        beam.animate([{opacity:0},{opacity:.35},{opacity:0}],{duration:2400,delay:i*180});
-      }
-      const m=addFx(`<div style="font-size:100px">🏙️</div>`, {ms:dur});
-      m.animate([{transform:'translate(-50%,40vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1800,easing:'ease-out'});
-      break;
-    }
-
-    case 'mermaid': {
-      const mer=addFx(`<div style="font-size:100px">🧜‍♀️</div>`, {ms:dur});
-      mer.animate(
-        [{transform:'translate(-80vw,10vh) rotate(-6deg)'},
-         {transform:'translate(0,0) rotate(0deg)'},
-         {transform:'translate(70vw,-6vh) rotate(6deg)'}],
-        {duration:6200,easing:'ease-in-out'}
-      );
-      for(let i=0;i<40;i++){
-        const b=addFx(`<div style="width:10px;height:10px;border:1px solid #aef; border-radius:50%"></div>`, {ms:1800});
-        b.animate(
-          [{transform:`translate(${(Math.random()*2-1)*140}px, ${60+Math.random()*40}px)`,opacity:.0},
-           {transform:'translate(0,0)',opacity:.9},
-           {transform:`translate(${(Math.random()*2-1)*80}px, ${-120+Math.random()*60}px)`,opacity:0}],
-          {duration:1800,delay:i*60}
-        );
-      } break;
-    }
-
-    case 'cupids': {
-      SFX.twinkle();
-      for(let i=0;i<50;i++){
-        const h=addFx(`<div style="font-size:28px">💘</div>`, {ms:2200});
-        h.animate([{transform:`translate(${ -60 + Math.random()*120 }vw,-60vh) rotate(-20deg)`,opacity:.0},
-                   {transform:`translate(${ -20 + Math.random()*40 }vw,20vh) rotate(0deg)`,opacity:1},
-                   {transform:`translate(${ 60 + Math.random()*40 }vw,60vh) rotate(15deg)`,opacity:0}],
-                  {duration:2000,delay:i*40,easing:'linear'});
-      } break;
-    }
-
-    case 'elfQueen': {
-      lensTint('rgba(180,140,255,.20)', 1200);
-      const q=addFx(`<div style="font-size:100px">🧝‍♀️</div>`, {ms:dur});
-      q.animate([{transform:'translate(-50%,30vh) scale(.9)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:1400,easing:'ease-out'});
-      const crown=addFx(`<div style="font-size:64px">👑</div>`, {ms:2000,style:{top:'40%'}});
-      SFX.chime();
-      crown.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:0},{transform:'translate(-50%,-90%) scale(1.2)',opacity:1},{transform:'translate(-50%,-110%) scale(1)',opacity:0}],{duration:1800});
-      for(let i=0;i<30;i++){
-        const s=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:#fff"></div>`,{ms:1600});
-        s.animate([{transform:`translate(${(Math.random()*2-1)*120}px, ${(Math.random()*2-1)*120}px) scale(.6)`,opacity:0},
-                   {transform:'translate(0,0) scale(1.4)',opacity:1},
-                   {opacity:0}],{duration:1500,delay:i*40});
-      } break;
-    }
-
-    case 'goldJet': {
-      const jet=addFx(`<div style="font-size:96px">🛩️</div>`, {ms:dur,style:{left:'-20%'}});
-      SFX.jet();
-      jet.animate([{transform:'translate(-10vw,0) scale(.9)'},
-                   {transform:'translate(40vw,-10vh) scale(1)'},
-                   {transform:'translate(120vw,-18vh) scale(1.05)'}],
-                  {duration:4200,easing:'cubic-bezier(.4,.8,.2,1)'});
-      setTimeout(()=>{
-        const ring=addFx(`<div style="width:12px;height:12px;border:4px solid rgba(255,255,255,.7);border-radius:9999px"></div>`, {ms:900});
-        ring.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:1},{transform:'translate(-50%,-50%) scale(10)',opacity:0}],{duration:900});
-      },900);
-      for(let i=0;i<4;i++){
-        const trail=addFx(`<div style="width:2px;height:50vh;background:linear-gradient(#fff,transparent)"></div>`, {ms:1600,style:{left:`${30+i*4}%`,top:'10%'}});
-        trail.animate([{opacity:.0},{opacity:.8},{opacity:0}],{duration:1600,delay:i*120});
-      }
-      lensTint('rgba(255,220,120,.2)', 900);
-      break;
-    }
-
-    case 'rolex': {
-      const w=addFx(`<div style="font-size:110px">⌚</div>`, {ms:dur});
-      w.animate([{transform:'translate(-50%,-50%) rotate(0deg)'},
-                 {transform:'translate(-50%,-50%) rotate(360deg)'}],
-                {duration:2600,easing:'linear',iterations:3});
-      for(let i=0;i<3;i++){
-        const g=addFx(`<div style="width:220px;height:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);transform:skewY(-20deg)"></div>`,{ms:1200});
-        g.animate([{transform:'translate(-70%,-50%)'},{transform:'translate(20%,-50%)'}],{duration:1200,delay:i*600});
-      }
-      for(let i=0;i<24;i++){
-        const sp=addFx(`<div style="width:6px;height:6px;border-radius:50%;background:#fff"></div>`,{ms:1200});
-        const a=i*(360/24), r=80;
-        sp.animate([{transform:`translate(${r*Math.cos(a*Math.PI/180)}px, ${r*Math.sin(a*Math.PI/180)}px) scale(.6)`,opacity:0},
-                    {transform:'translate(0,0) scale(1.4)',opacity:1},
-                    {opacity:0}],{duration:1000,delay:i*40});
-      } break;
-    }
-
-    case 'chariots': {
-      const herd = ['🐎','🐎','🐎','🐎']; SFX.gallop();
-      herd.forEach((h,i)=>{
-        const horse=addFx(`<div style="font-size:${i<2?84:72}px">${h}</div>`, {ms:dur,style:{left:'-10%'}});
-        horse.animate([{transform:`translate(${-120 - i*20}vw, ${i%2?6:-6}vh)`},
-                       {transform:`translate(60vw, ${i%2?-2:2}vh)`},
-                       {transform:`translate(130vw, ${i%2?0:4}vh)`}],
-                      {duration:5200 + i*200,easing:'cubic-bezier(.4,.8,.2,1)'});
+  /* Routes (demo content swap) */
+  const content = $('#content');
+  function route(view='home'){
+    if(!content) return;
+    if(view==='wallet'){
+      content.innerHTML = `
+        <section class="card">
+          <h2 style="margin:0 0 6px">Wallet</h2>
+          <p class="subtitle">This demo wallet only tracks local BuzzCoin for testing gifts.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+            <button class="chip" id="devUp">Dev +100</button>
+            <button class="chip" id="reset">Reset balance</button>
+          </div>
+        </section>`;
+      safe(()=>$('#devUp').addEventListener('click', ()=>{ balance+=100; updateBalance(); showToast('+100 BuzzCoin') }));
+      safe(()=>$('#reset').addEventListener('click', ()=>{ balance=0; updateBalance(); showToast('Balance reset') }));
+    } else if(view==='gifts'){
+      content.innerHTML = `
+        <section class="card">
+          <h2 style="margin:0 0 6px">Gifts</h2>
+          <p class="subtitle">Tap a gift to see its animation. (Demo subset)</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+            <button class="chip" data-gift="phoenix">🔥 Phoenix</button>
+            <button class="chip" data-gift="unicorn">🦄 Unicorn</button>
+            <button class="chip" data-gift="jet">🛩️ Jet</button>
+          </div>
+        </section>`;
+      const wrap = content;
+      wrap.addEventListener('click', (e)=>{
+        const g = e.target.closest('.chip');
+        if(!g) return;
+        playGift(g.dataset.gift);
       });
-      for(let i=0;i<30;i++){
-        const d=addFx(`<div style="width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#fff5,transparent 60%)"></div>`,{ms:1400,style:{bottom:'8%'}});
-        d.style.top='auto';
-        d.animate([{transform:`translate(${Math.random()*80-40}px,0)`,opacity:.7},{transform:`translate(${Math.random()*120-60}px,-40px)`,opacity:0}],{duration:1200,delay:i*60});
-      } break;
+    } else if(view==='profile'){
+      content.innerHTML = `
+        <section class="card">
+          <h2 style="margin:0 0 6px">Profile</h2>
+          <p class="subtitle">Coming soon.</p>
+        </section>`;
+    } else {
+      content.innerHTML = `
+        <section class="card">
+          <h2 style="margin:0 0 6px">Feed</h2>
+          <p class="subtitle">Following feed placeholder.</p>
+        </section>`;
     }
-
-    default: {
-      const n=addFx(`<div style="font-size:${heavy?96:g.price>=500?84:64}px">${g.emo}</div>`, {ms:dur});
-      n.animate([{transform:'translate(-50%,-40%) scale(.9)'},
-                 {transform:'translate(-50%,-50%) scale(1.2)'},
-                 {transform:'translate(-50%,-55%) scale(1)'}],
-                {duration:1400,easing:'ease-in-out'});
-      for(let i=0;i<10;i++){
-        const star=addFx(`<div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>`, {ms:1200});
-        star.animate([{transform:`translate(${(Math.random()*2-1)*80}px, ${(Math.random()*2-1)*60}px)`,opacity:1},
-                      {transform:`translate(${(Math.random()*2-1)*140}px, ${(Math.random()*2-1)*120}px)`,opacity:0}],
-                     {duration:1000,delay:i*60});
-      }
-    }
+    window.scrollTo({top:0,behavior:'smooth'});
   }
-}
 
-/* ------------- misc ------------- */
-el('goLive').addEventListener('click', ()=> toast("Mock: Start Live not wired in demo", "warn"));
-window.addEventListener('error', e=> toast("JS error: "+(e.message||'Unknown'), 'bad', 2600));
-show('scrHome');
+  /* Floating honeypot action */
+  safe(()=>$('#honeypot').addEventListener('click', ()=>{
+    showToast('Start Live (demo)');
+  }));
+
+  /* Sound toggle */
+  function refreshSoundLabel(){
+    if(soundBtn) soundBtn.textContent = (soundOn?'🔊 On':'🔈 Off');
+  }
+  if(soundBtn){
+    soundBtn.addEventListener('click', ()=>{
+      soundOn = !soundOn; refreshSoundLabel();
+      showToast(soundOn?'Sound on':'Sound off');
+    });
+    // Auto show briefly on first interaction
+    setTimeout(()=>soundBtn.classList.remove('hide'), 300);
+    setTimeout(()=>soundBtn.classList.add('hide'), 3500);
+  }
+
+  /* Gift demo effects (simple placeholders — your richer effects live in your separate JS) */
+  function playGift(kind){
+    if(balance<=0){ showToast('Not enough BuzzCoin'); return; }
+    balance -= 1; updateBalance();
+
+    const fx = document.createElement('div');
+    fx.style.position='fixed'; fx.style.inset='0'; fx.style.pointerEvents='none'; fx.style.zIndex='60';
+    fx.style.display='grid'; fx.style.placeItems='center';
+    document.body.appendChild(fx);
+
+    const span = document.createElement('div');
+    span.style.fontSize='64px';
+    span.style.filter='drop-shadow(0 12px 20px rgba(0,0,0,.45))';
+    span.style.transition='transform 5s cubic-bezier(.2,.7,.1,1), opacity .6s ease';
+    fx.appendChild(span);
+
+    if(kind==='phoenix'){ span.textContent='🔥'; span.style.transform='scale(0.6) translateY(40px)'; requestAnimationFrame(()=>{ span.style.transform='scale(1.4) translateY(-80px) rotate(5deg)'; }); }
+    else if(kind==='unicorn'){ span.textContent='🦄'; span.style.transform='translateX(-60vw) rotate(-12deg)'; requestAnimationFrame(()=>{ span.style.transform='translateX(60vw) rotate(8deg)'; }); }
+    else { span.textContent='🛩️'; span.style.transform='translateX(-70vw)'; requestAnimationFrame(()=>{ span.style.transform='translateX(70vw)'; }); }
+
+    setTimeout(()=>{ span.style.opacity='0'; }, 4800);
+    setTimeout(()=>{ fx.remove(); }, 5600);
+  }
+
+  /* Init */
+  updateBalance(); refreshSoundLabel(); route('home');
+
+})();
 </script>
 </body>
 </html>
