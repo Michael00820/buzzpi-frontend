@@ -1,1 +1,19 @@
 
+:root{
+  --bg:#0b0b0d;--panel:#15151a;--text:#e9e9ee;--muted:#a4a6b0;
+  --brand:#a889ff;--brand2:#6f5bff;--accent:#ffcc66;--ring:#242433;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body.app{margin:0;background:var(--bg);color:var(--text);font:500 16px/1.4 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;}
+.topbar{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(180deg,#121219 0%,#0b0b0d 100%);border-bottom:1px solid var(--ring)}
+.balance{display:flex;align-items:center;gap:8px;font-weight:700}
+.balance .coin{width:18px;height:18px}
+.tabs{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ring);position:sticky;top:52px;background:var(--bg);z-index:9}
+.tab{padding:6px 12px;border-radius:999px;border:1px solid var(--ring);background:#111218;color:var(--muted)}
+.tab.active{background:linear-gradient(180deg,var(--brand),var(--brand2));color:white;border-color:transparent}
+.content{padding:16px;min-height:calc(100dvh - 200px)}
+.nav{position:fixed;left:0;right:0;bottom:0;padding:10px 12px 22px;display:flex;justify-content:space-around;gap:10px;background:rgba(10,10,12,.6);backdrop-filter:blur(10px);border-top:1px solid var(--ring)}
+.navbtn{display:flex;flex-direction:column;align-items:center;gap:6px;width:72px;padding:8px 0;border-radius:14px;background:#15161e;border:1px solid #242433;color:#cfd2dd}
+.honeypot{position:fixed;left:50%;bottom:52px;transform:translateX(-50%);width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #ffedb3, #ffb78a 55%, #e67261 100%);box-shadow:0 8px 22px rgba(0,0,0,.45), 0 0 34px rgba(255,200,120,.35) inset;border:none;color:#3b2300;font-size:32px;display:grid;place-items:center}
+.sound-toggle{position:fixed;right:12px;bottom:120px;z-index:20;background:#1a1b24;border:1px solid #2a2b38;color:#dfe3f1;border-radius:12px;padding:8px 10px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+@media(min-width:768px){.nav{justify-content:center;gap:14px}.navbtn{width:90px}.sound-toggle{right:20px;bottom:128px}}
