@@ -2,32 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>BuzzPi</title>
-
-  <!-- App styles -->
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Preload icons (optional, helps first paint) -->
-  <link rel="preload" as="image" href="assets/buzzcoin-gold.png">
-  <link rel="preload" as="image" href="assets/honeypot.png">
+  <meta name="theme-color" content="#0b0b0e" />
 </head>
 <body>
-  <!-- App wrapper -->
-  <div id="app" class="app">
+  <!-- ===== SVG ICONS (inline, no external assets needed) ===== -->
+  <svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true" focusable="false">
+    <defs>
+      <!-- BuzzCoin gradients & filters -->
+      <linearGradient id="bz-gold" x1="14%" y1="6%" x2="86%" y2="94%">
+        <stop offset="0%"  stop-color="#FFE39A"/>
+        <stop offset="55%" stop-color="#F7B25F"/>
+        <stop offset="100%" stop-color="#C6712C"/>
+      </linearGradient>
+      <filter id="bz-glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="b"/>
+        <feMerge>
+          <feMergeNode in="b"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
 
+      <!-- Honeypot gradients -->
+      <linearGradient id="hp-jar" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%"  stop-color="#3A221A"/>
+        <stop offset="100%" stop-color="#1A0F0C"/>
+      </linearGradient>
+      <linearGradient id="hp-honey" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%"  stop-color="#FFD36A"/>
+        <stop offset="55%" stop-color="#FFB347"/>
+        <stop offset="100%" stop-color="#E07A2E"/>
+      </linearGradient>
+      <radialGradient id="hp-glow" cx="50%" cy="45%" r="60%">
+        <stop offset="0%" stop-color="rgba(255,200,120,.45)"/>
+        <stop offset="65%" stop-color="rgba(255,160,70,.25)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <!-- ===== App ===== -->
+  <div id="app" class="app">
     <!-- Top bar -->
     <header class="topbar">
       <div class="topbar__title">BuzzPi</div>
-
-      <!-- Balance -->
-      <div class="balance">
-        <img class="balance__icon" src="assets/buzzcoin-gold.png" alt="BuzzCoin" />
+      <div class="balance" aria-live="polite">
+        <!-- Inline BuzzCoin icon -->
+        <svg class="balance__icon" viewBox="0 0 128 128" role="img" aria-label="BuzzCoin">
+          <circle cx="64" cy="64" r="58" fill="url(#bz-gold)" filter="url(#bz-glow)"/>
+          <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+          <circle cx="64" cy="64" r="52" fill="none" stroke="rgba(0,0,0,.15)" stroke-width="2"/>
+          <!-- Stylized “1” -->
+          <path d="M72 86c0 4.4-3.6 8-8 8s-8-3.6-8-8V46.5l-3.6 2.8c-3.5 2.8-8.6 2.2-11.4-1.3-2.8-3.5-2.2-8.6 1.3-11.4l12.7-10c2.2-1.7 5-2.7 7.8-2.7 7 0 12.7 5.7 12.7 12.7V86z"
+                fill="#6D430F" opacity=".92"/>
+        </svg>
         <span id="balanceAmount" class="balance__amount">0</span>
       </div>
     </header>
 
-    <!-- Category tabs -->
+    <!-- Feed tabs -->
     <nav class="tabs">
       <button class="tab active" data-tab="following">Following</button>
       <button class="tab" data-tab="popular">Popular</button>
@@ -35,7 +70,7 @@
       <button class="tab" data-tab="new">New</button>
     </nav>
 
-    <!-- Page content -->
+    <!-- Pages -->
     <main id="pageRoot" class="page">
       <section id="feedPage" class="page__view page__view--active">
         <h1 class="page__title">Feed</h1>
@@ -64,16 +99,31 @@
       </section>
     </main>
 
-    <!-- Floating honeypot (FAB) -->
+    <!-- Honeypot FAB (inline SVG) -->
     <button id="fabGift" class="fab" aria-label="Open gifts">
       <span class="fab__halo"></span>
-      <span class="fab__glow"></span>
-      <img class="fab__icon" src="assets/honeypot.png" alt="Honeypot"/>
+      <svg class="fab__icon" viewBox="0 0 128 128" role="img" aria-label="Honeypot">
+        <!-- Outer glow -->
+        <circle cx="64" cy="64" r="60" fill="url(#hp-glow)"/>
+        <!-- Jar body -->
+        <rect x="28" y="34" width="72" height="70" rx="16" fill="url(#hp-jar)"/>
+        <!-- Honey inside -->
+        <path d="M36 58c10-8 22-8 32 0s22 8 32 0v30c0 8-6 14-14 14H50c-8 0-14-6-14-14V58z"
+              fill="url(#hp-honey)"/>
+        <!-- Lip / lid -->
+        <rect x="24" y="24" width="80" height="16" rx="8" fill="#3D2A21"/>
+        <rect x="30" y="26" width="68" height="12" rx="6" fill="#5A3A2D"/>
+        <!-- Highlights -->
+        <path d="M42 44c0 10 8 6 18 0" stroke="rgba(255,240,210,.55)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 82c6 4 18 4 24 0" stroke="rgba(255,210,120,.55)" stroke-width="6" stroke-linecap="round"/>
+        <!-- Small drip -->
+        <path d="M86 60c4 6 4 10 0 14" stroke="#F2A547" stroke-width="4" stroke-linecap="round"/>
+      </svg>
     </button>
 
     <!-- Sound toggle -->
     <div class="sound">
-      <button id="soundToggle" class="sound__btn">
+      <button id="soundToggle" class="sound__btn" aria-pressed="true">
         <span class="sound__dot" aria-hidden="true"></span>
         <span id="soundLabel">On</span>
       </button>
@@ -85,20 +135,15 @@
         <span class="tabbar__emoji">🏠</span>
         <span class="tabbar__label">Home</span>
       </button>
-
       <button class="tabbar__item" data-page="gifts">
         <span class="tabbar__emoji">🎁</span>
         <span class="tabbar__label">Gifts</span>
       </button>
-
-      <!-- spacer ensures FAB has room & is centered -->
       <div class="tabbar__spacer" aria-hidden="true"></div>
-
       <button class="tabbar__item" data-page="wallet">
         <span class="tabbar__emoji">💰</span>
         <span class="tabbar__label">Wallet</span>
       </button>
-
       <button class="tabbar__item" data-page="profile">
         <span class="tabbar__emoji">👤</span>
         <span class="tabbar__label">Profile</span>
@@ -106,7 +151,7 @@
     </nav>
   </div>
 
-  <!-- App code -->
+  <!-- Your existing app logic -->
   <script src="app.js"></script>
 </body>
 </html>
