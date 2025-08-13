@@ -119,3 +119,95 @@ body{
   .fab{ bottom:calc(86px + max(0px, env(safe-area-inset-bottom))); }
   .sound{ bottom:calc(112px + max(0px, env(safe-area-inset-bottom))); }
 }
+
+/* ====== Gifts UI ====== */
+.gifts {
+  display: grid;
+  gap: 14px;
+}
+.gifts__group {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 18px;
+  padding: 12px;
+}
+.gifts__title {
+  margin: 4px 4px 10px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .2px;
+}
+.gift-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 10px;
+}
+.gift {
+  user-select: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  background: #121219;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  text-align: center;
+  color: var(--text);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.gift__emoji { font-size: 22px; line-height: 1; }
+.gift__label { font-size: 12px; color: var(--muted); }
+.gift__price { font-size: 12px; font-weight: 800; }
+
+.gift--selected {
+  border-color: rgba(111,104,255,.6);
+  box-shadow: 0 0 0 3px rgba(111,104,255,.25);
+  animation: gift-breathe 1.2s ease-in-out infinite;
+}
+@keyframes gift-breathe {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.05); }
+}
+
+.gifts__actions {
+  position: sticky;
+  bottom: calc(64px + 16px);
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.btn-send {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 0;
+  font-weight: 800;
+  background: var(--brand);
+  color: #fff;
+}
+.btn-multi {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: #1b1b23;
+  color: #fff;
+  font-weight: 700;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(92px + 76px);
+  background: #1b1b22;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.toast--show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
