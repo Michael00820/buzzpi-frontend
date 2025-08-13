@@ -1,0 +1,11 @@
+(function () {
+  const pot = document.querySelector('.fab .pot');
+  if (!pot) return;
+
+  const testImg = new Image();
+  testImg.onerror = () => {
+    pot.style.backgroundImage =
+      "url('data:image/svg+xml;utf8,<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 128 128\"><defs><linearGradient id=\"g\" x1=\"14%\" y1=\"6%\" x2=\"86%\" y2=\"94%\"><stop offset=\"0%\" stop-color=\"#FFE39A\"/><stop offset=\"55%\" stop-color=\"#F7B25F\"/><stop offset=\"100%\" stop-color=\"#C6712C\"/></linearGradient></defs><circle cx=\"64\" cy=\"64\" r=\"58\" fill=\"url(#g)\"/><circle cx=\"64\" cy=\"64\" r=\"58\" fill=\"none\" stroke=\"rgba(255,255,255,.35)\" stroke-width=\"2\"/><circle cx=\"64\" cy=\"64\" r=\"52\" fill=\"none\" stroke=\"rgba(0,0,0,.15)\" stroke-width=\"2\"/><path d=\"M72 86c0 4.4-3.6 8-8 8s-8-3.6-8-8V46.5l-3.6 2.8c-3.5 2.8-8.6 2.2-11.4-1.3-2.8-3.5-2.2-8.6 1.3-11.4l12.7-10c2.2-1.7 5-2.7 7.8-2.7 7 0 12.7 5.7 12.7 12.7V86z\" fill=\"#6D430F\" opacity=\".92\"/></svg>')";
+  };
+  testImg.src = '/assets/buzzcoin.svg';
+})();
