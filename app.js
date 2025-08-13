@@ -466,6 +466,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // }, 400);
   }
 })();
+
+// Long-press honeypot to toggle the Pi tools panel
+(function () {
+  const fab = document.getElementById("fabButton"); // make sure your honey pot has this id
+  if (!fab) return;
+  let t;
+  fab.addEventListener("touchstart", () => {
+    t = setTimeout(() => {
+      const box = document.getElementById("piTools");
+      if (!box) return;
+      box.classList.toggle("hidden");
+    }, 550); // hold ~0.5s
+  });
+  ["touchend", "touchcancel"].forEach(ev =>
+    fab.addEventListener(ev, () => clearTimeout(t))
+  );
+})();
   // ---------- Initial ----------
   showPage("feedPage");
 });
