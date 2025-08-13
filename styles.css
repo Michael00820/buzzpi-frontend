@@ -242,3 +242,49 @@ body{
   color: #fff;
 }
 .hidden{ display:none; }
+
+/* Pi Dev Tools */
+.pi-tools.hidden { display: none; }
+.pi-tools {
+  position: fixed;
+  right: 14px;
+  bottom: 110px; /* above sound toggle & nav */
+  z-index: 9999;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+}
+.pi-tools-card {
+  background: rgba(20,20,24,.92);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  min-width: 240px;
+}
+.pi-tools-title {
+  font-weight: 700;
+  color: #cfd3ff;
+  margin-bottom: 8px;
+  font-size: 14px;
+  letter-spacing: .3px;
+}
+.pi-tools-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+.pi-state {
+  color: #9aa3b2;
+  font-size: 12px;
+}
+.btn {
+  background: #2a2f3a;
+  color: #e9edf7;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.btn-primary { background: #5b6cff; }
+.btn-danger { background: #ff4d4f; }
+.btn:disabled { opacity: .5; }
