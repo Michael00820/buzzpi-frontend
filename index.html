@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>BuzzPi</title>
 
-  <!-- Your styles (keep filename as you have it) -->
-  <link rel="stylesheet" href="/styles.css" />
+  <!-- RELATIVE path (no leading slash) so it works under /app/buzzpi -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
@@ -14,9 +14,9 @@
   <header class="topbar">
     <div class="brand">BuzzPi</div>
 
-    <!-- Balance (uses your SVG; change path if needed) -->
     <div class="balance">
-      <img src="/assets/buzzcoin.svg" alt="BuzzCoin" class="balance-coin" />
+      <!-- RELATIVE asset path -->
+      <img src="assets/buzzcoin.svg" alt="BuzzCoin" class="balance-coin" />
       <span id="balanceValue">0</span>
     </div>
   </header>
@@ -31,17 +31,14 @@
 
   <!-- Pages -->
   <main id="pages">
-    <!-- Feed -->
     <section id="feedPage" class="page visible">
       <h1>Feed</h1>
       <p>Following feed placeholder.</p>
     </section>
 
-    <!-- Gifts -->
     <section id="giftsPage" class="page">
       <h1>Gifts</h1>
 
-      <!-- Pi Sign-in (works in Pi Browser; safe in normal browsers) -->
       <div class="card">
         <h3>Account</h3>
         <button id="piLoginBtn" type="button" class="btn primary">Sign in with Pi</button>
@@ -54,7 +51,6 @@
       </div>
     </section>
 
-    <!-- Wallet -->
     <section id="walletPage" class="page">
       <h1>Wallet</h1>
       <div class="card">
@@ -66,7 +62,6 @@
       </div>
     </section>
 
-    <!-- Profile -->
     <section id="profilePage" class="page">
       <h1>Profile</h1>
       <div class="card">
@@ -75,13 +70,13 @@
     </section>
   </main>
 
-  <!-- Console panel (optional; helpful for SDK logs) -->
+  <!-- Console -->
   <section class="console-wrap">
     <div class="console-title">Console</div>
     <pre id="consolePanel" class="console"></pre>
   </section>
 
-  <!-- Bottom Nav + FAB -->
+  <!-- Bottom nav + centered FAB -->
   <nav class="bottom-nav">
     <button class="nav-btn active" data-target="feedPage">
       <span class="nav-emoji">🏠</span><span class="nav-label">Home</span>
@@ -90,9 +85,9 @@
       <span class="nav-emoji">🎁</span><span class="nav-label">Gifts</span>
     </button>
 
-    <!-- Center FAB (Honeypot) -->
     <button id="honeypotFab" class="fab" aria-label="Honeypot">
-      <img src="/assets/honeypot.png" alt="Honeypot" />
+      <!-- RELATIVE asset path -->
+      <img src="assets/honeypot.png" alt="Honeypot" />
     </button>
 
     <button class="nav-btn" data-target="walletPage">
@@ -102,7 +97,6 @@
       <span class="nav-emoji">👤</span><span class="nav-label">Profile</span>
     </button>
 
-    <!-- Sound toggle -->
     <div class="sound-toggle">
       <label class="switch">
         <input id="soundToggle" type="checkbox" checked />
@@ -112,9 +106,10 @@
     </div>
   </nav>
 
-  <!-- Pi SDK (must load before app.js) -->
+  <!-- Pi SDK must be absolute (hosted by Pi) -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <!-- Your app code -->
-  <script src="/app.js"></script>
+
+  <!-- RELATIVE path for your JS -->
+  <script src="app.js"></script>
 </body>
 </html>
