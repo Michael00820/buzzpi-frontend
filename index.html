@@ -159,5 +159,23 @@
 
   <!-- Your existing app logic -->
   <script src="app.js"></script>
+
+<!-- Pi Dev Tools (only shows in Pi Browser) -->
+<div id="piTools" class="pi-tools hidden">
+  <div class="pi-tools-card">
+    <div class="pi-tools-title">Pi SDK</div>
+    <div class="pi-tools-row">
+      <button id="btnPiInit" class="btn btn-primary">Init SDK</button>
+      <span id="piInitState" class="pi-state">not inited</span>
+    </div>
+    <div class="pi-tools-row">
+      <button id="btnPiSignIn" class="btn">Sign in (username)</button>
+      <span id="piUserState" class="pi-state">no user</span>
+    </div>
+    <div class="pi-tools-row">
+      <button id="btnPiClear" class="btn btn-danger">Clear Pi session</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
