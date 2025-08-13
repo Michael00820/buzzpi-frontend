@@ -338,3 +338,53 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Initial ----------
   showPage("feedPage");
 });
+
+// ---- Dev Tools chip (shows only in Pi Browser) ----
+(function setupDevTools(){
+  const dev = document.getElementById('dev-tools');
+  if (!dev) return;
+
+  const inPi = typeof window !== 'undefined' && !!window.Pi;
+  if (!inPi) return; // only show inside Pi Browser
+
+  dev.classList.remove('hidden');
+
+  // Wire buttons
+  dev.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const act = btn.dataset.act;
+
+    try {
+      if (act === 'init') {
+        await window.Pi?.init({ sandbox: true });
+        alert('Pi.init() done');
+      }
+      if (act === 'signin') {
+        const res = await window.Pi?.authenticate({ scopes: ['username'] }, onIncomplete);
+        alert('Signed in as: ' + res?.user?.username);
+      }
+      if (act === 'pay') {
+        // tiny test payment (sandbox)
+        const payment = await window.Pi?.createPayment({
+          amount: "0.01",
+          memo: "BuzzPi test",
+          metadata: { test: true }
+        }, {onReadyForServerApproval, onReadyForServerCompletion, onCancel, onError});
+        console.log('payment', payment);
+        alert('Payment started (sandbox)');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error: ' + (err?.message || err));
+    }
+  });
+
+  // minimal callbacks
+  function onIncomplete(){ console.log('auth incomplete'); }
+  function onReadyForServerApproval(paymentId){ console.log('approve', paymentId); }
+  function onReadyForServerCompletion(paymentId, txId){ console.log('complete', paymentId, txId); }
+  function onCancel(){ console.log('cancelled'); }
+  function onError(err){ console.error(err); }
+
+})();
