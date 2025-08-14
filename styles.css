@@ -139,3 +139,14 @@ h2{font-size:22px; margin:24px 0 12px}
 }
 .fx .sprite{ filter:drop-shadow(0 8px 40px rgba(255,200,60,.35)); }
 @keyframes fadeOut{ 0%{opacity:1} 90%{opacity:1} 100%{opacity:0} }
+
+/* Level progress */
+.level-card .bar {
+  height: 10px; background:#1f2634; border-radius: 999px; overflow:hidden; border:1px solid #2a3140;
+}
+.level-card .bar > i {
+  display:block; height:100%; background:linear-gradient(90deg,#6f5cff,#9a8cff);
+  width:0%;
+}
+.level-row{display:flex;align-items:center;justify-content:space-between;margin:8px 0 6px}
+.level-chip{background:#2a2f3a;border:1px solid #394255;border-radius:999px;padding:6px 10px;font-weight:700}
