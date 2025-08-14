@@ -1,4 +1,4 @@
-import { piFetch } from '../_pi.js';
+import { cancelPayment } from '../_pi.js';
 
 export default async function handler(req, res) {
   try {
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const { paymentId } = body;
     if (!paymentId) return res.status(400).json({ error:'paymentId required' });
 
-    const out = await piFetch(`/payments/${paymentId}/cancel`, 'POST');
+    const out = await cancelPayment(paymentId);
     return res.status(200).json({ ok:true, out });
   } catch (e) {
     console.error('cancel error', e);
