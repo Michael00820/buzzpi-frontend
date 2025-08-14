@@ -118,14 +118,24 @@
 
     <!-- PROFILE -->
     <section id="page-profile" class="page">
-      <h1>Profile</h1>
-      <div class="card">
-        <div id="profileBox2" class="muted">Not signed in.</div>
-        <div class="row gap">
-          <button id="btnPi2" class="btn">Sign in with Pi</button>
-        </div>
-      </div>
-    </section>
+  <h1>Profile</h1>
+  <div class="card">
+    <div id="profileBox2" class="muted">Not signed in.</div>
+    <div class="row gap" style="margin-top:10px">
+      <button id="btnPi2" class="btn">Sign in with Pi</button>
+    </div>
+  </div>
+
+  <div class="card level-card">
+    <div class="title">Level</div>
+    <div class="level-row">
+      <div id="levelLabel" class="level-chip">Lv 1</div>
+      <div id="levelNext" class="muted">0 / 500 BuzzCoin</div>
+    </div>
+    <div class="bar"><i id="levelBar" style="width:0%"></i></div>
+    <small class="muted">Earn 1 level per 500 BuzzCoin gifted (≈ $50).</small>
+  </div>
+</section>
   </main>
 
   <!-- Bottom nav -->
