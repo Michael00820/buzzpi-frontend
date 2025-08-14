@@ -20,3 +20,9 @@ export async function piFetch(path, method = 'GET', body) {
   }
   try { return await res.json(); } catch { return {}; }
 }
+
+// --- NEW: convenience helpers ---
+export const getPayment = (paymentId) => piFetch(`/payments/${paymentId}`, 'GET');
+export const approvePayment = (paymentId) => piFetch(`/payments/${paymentId}/approve`, 'POST');
+export const completePayment = (paymentId, txid) => piFetch(`/payments/${paymentId}/complete`, 'POST', { txid });
+export const cancelPayment = (paymentId) => piFetch(`/payments/${paymentId}/cancel`, 'POST');
