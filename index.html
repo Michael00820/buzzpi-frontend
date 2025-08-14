@@ -2,114 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>BuzzPi</title>
-
-  <!-- RELATIVE path (no leading slash) so it works under /app/buzzpi -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- Pi SDK (only does anything inside Pi Browser) -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
-
 <body>
-  <!-- Top bar -->
+  <!-- App Header -->
   <header class="topbar">
     <div class="brand">BuzzPi</div>
-
     <div class="balance">
-      <!-- RELATIVE asset path -->
-      <img src="assets/buzzcoin.svg" alt="BuzzCoin" class="balance-coin" />
-      <span id="balanceValue">0</span>
+      <span class="coin-ico" aria-hidden="true"></span>
+      <span id="balanceLbl">0</span>
     </div>
   </header>
 
-  <!-- Category tabs -->
-  <nav class="tabs">
-    <button class="tab active" data-tab="following">Following</button>
-    <button class="tab" data-tab="popular">Popular</button>
-    <button class="tab" data-tab="nearby">Nearby</button>
-    <button class="tab" data-tab="new">New</button>
+  <!-- Category chips -->
+  <nav class="chips">
+    <button class="chip active" data-chip="following">Following</button>
+    <button class="chip" data-chip="popular">Popular</button>
+    <button class="chip" data-chip="nearby">Nearby</button>
+    <button class="chip" data-chip="new">New</button>
   </nav>
 
   <!-- Pages -->
-  <main id="pages">
-    <section id="feedPage" class="page visible">
+  <main>
+    <!-- FEED -->
+    <section id="page-home" class="page visible">
       <h1>Feed</h1>
-      <p>Following feed placeholder.</p>
-    </section>
+      <p id="feedSub" class="muted">Following feed placeholder.</p>
 
-    <section id="giftsPage" class="page">
-      <h1>Gifts</h1>
-
-      <div class="card">
-        <h3>Account</h3>
-        <button id="piLoginBtn" type="button" class="btn primary">Sign in with Pi</button>
-        <p id="piUserLine" class="muted" style="margin-top:.5rem;"></p>
-      </div>
-
-      <div class="card">
-        <h3>Gifts placeholder</h3>
-        <p>Your gift grid / categories render here.</p>
-      </div>
-    </section>
-
-    <section id="walletPage" class="page">
-      <h1>Wallet</h1>
-      <div class="card">
-        <p>This demo wallet only tracks local BuzzCoin for testing gifts.</p>
+      <h2>Gifts</h2>
+      <div class="card" id="accountCard">
+        <div class="row">
+          <div class="title">Account</div>
+          <div id="accountRow" class="muted">Not signed in.</div>
+        </div>
         <div class="row gap">
-          <button id="devPlus100" class="btn">Dev +100</button>
-          <button id="resetBalance" class="btn outline">Reset balance</button>
+          <button id="btnPi" class="btn">Sign in with Pi</button>
+        </div>
+        <div id="profileBox" class="muted"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div class="title">Gift filters</div>
+        </div>
+        <div class="pills">
+          <button class="pill active" data-cat="all">All</button>
+          <button class="pill" data-cat="party">Party</button>
+          <button class="pill" data-cat="fun">Fun</button>
+          <button class="pill" data-cat="billionaire">Billionaire</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div class="title">Gifts</div>
+        </div>
+        <div id="giftGrid" class="gift-grid"></div>
+        <div class="row gap">
+          <button id="btnSend" class="btn primary" disabled>Send</button>
+        </div>
+      </div>
+
+      <h2>Wallet</h2>
+      <div class="card">
+        <p class="muted">This demo wallet only tracks local BuzzCoin for testing gifts.</p>
+        <div class="row gap">
+          <button class="btn" id="btnDev100">Dev +100</button>
+          <button class="btn" id="btnResetBal">Reset balance</button>
+        </div>
+      </div>
+
+      <h2>Profile</h2>
+      <div class="card">
+        <p class="muted">Profile placeholder.</p>
+      </div>
+    </section>
+
+    <!-- GIFTS (same content, separate page for tab demo) -->
+    <section id="page-gifts" class="page">
+      <h1>Gifts</h1>
+      <div class="card">
+        <div class="row">
+          <div class="title">Gift filters</div>
+        </div>
+        <div class="pills">
+          <button class="pill active" data-cat="all">All</button>
+          <button class="pill" data-cat="party">Party</button>
+          <button class="pill" data-cat="fun">Fun</button>
+          <button class="pill" data-cat="billionaire">Billionaire</button>
+        </div>
+      </div>
+      <div class="card">
+        <div id="giftGrid2" class="gift-grid"></div>
+        <div class="row gap">
+          <button id="btnSend2" class="btn primary" disabled>Send</button>
         </div>
       </div>
     </section>
 
-    <section id="profilePage" class="page">
+    <!-- WALLET -->
+    <section id="page-wallet" class="page">
+      <h1>Wallet</h1>
+      <div class="card">
+        <p class="muted">This demo wallet only tracks local BuzzCoin for testing gifts.</p>
+        <div class="row gap">
+          <button class="btn" id="btnDev100w">Dev +100</button>
+          <button class="btn" id="btnResetBalw">Reset balance</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="page-profile" class="page">
       <h1>Profile</h1>
       <div class="card">
-        <p>Profile placeholder.</p>
+        <div id="profileBox2" class="muted">Not signed in.</div>
+        <div class="row gap">
+          <button id="btnPi2" class="btn">Sign in with Pi</button>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- Console -->
-  <section class="console-wrap">
-    <div class="console-title">Console</div>
-    <pre id="consolePanel" class="console"></pre>
-  </section>
-
-  <!-- Bottom nav + centered FAB -->
+  <!-- Bottom nav -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-target="feedPage">
-      <span class="nav-emoji">🏠</span><span class="nav-label">Home</span>
-    </button>
-    <button class="nav-btn" data-target="giftsPage">
-      <span class="nav-emoji">🎁</span><span class="nav-label">Gifts</span>
-    </button>
+    <button class="tab active" data-page="home">🏠<span>Home</span></button>
+    <button class="tab" data-page="gifts">🎁<span>Gifts</span></button>
 
-    <button id="honeypotFab" class="fab" aria-label="Honeypot">
-      <!-- RELATIVE asset path -->
-      <img src="assets/honeypot.png" alt="Honeypot" />
-    </button>
+    <!-- Honeypot FAB -->
+    <button id="fabHoney" class="honeypot" aria-label="Open gifts"></button>
 
-    <button class="nav-btn" data-target="walletPage">
-      <span class="nav-emoji">💰</span><span class="nav-label">Wallet</span>
-    </button>
-    <button class="nav-btn" data-target="profilePage">
-      <span class="nav-emoji">👤</span><span class="nav-label">Profile</span>
-    </button>
-
-    <div class="sound-toggle">
-      <label class="switch">
-        <input id="soundToggle" type="checkbox" checked />
-        <span class="slider"></span>
-      </label>
-      <span class="sound-label">On</span>
-    </div>
+    <button class="tab" data-page="wallet">💰<span>Wallet</span></button>
+    <button class="tab" data-page="profile">👤<span>Profile</span></button>
   </nav>
 
-  <!-- Pi SDK must be absolute (hosted by Pi) -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-  <!-- RELATIVE path for your JS -->
-  <script src="app.js"></script>
+  <!-- App JS -->
+  <script type="module" src="./gifts.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
