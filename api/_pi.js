@@ -1,28 +1,19 @@
-const BASE = 'https://api.minepi.com/v2';
+// api/_pi.js
+import { readPiEnv } from './_utils/env';
 
-export async function piFetch(path, method = 'GET', body) {
-  const key = process.env.PI_API_KEY;
-  if (!key) throw new Error('Missing PI_API_KEY env var');
-
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers: {
-      'Authorization': `Key ${key}`,
-      'Content-Type': 'application/json'
-    },
-    body: body ? JSON.stringify(body) : undefined,
-    cache: 'no-store'
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Pi API ${method} ${path} ${res.status}: ${text}`);
+export default async function handler(req, res) {
+  const { ok, key, env } = readPiEnv();
+  if (!ok) {
+    console.error('PI_API_KEY missing in environment!');
+    return res
+      .status(500)
+      .json({ ok: false, error: 'Server not configured: PI_API_KEY missing' });
   }
-  try { return await res.json(); } catch { return {}; }
-}
 
-// --- NEW: convenience helpers ---
-export const getPayment = (paymentId) => piFetch(`/payments/${paymentId}`, 'GET');
-export const approvePayment = (paymentId) => piFetch(`/payments/${paymentId}/approve`, 'POST');
-export const completePayment = (paymentId, txid) => piFetch(`/payments/${paymentId}/complete`, 'POST', { txid });
-export const cancelPayment = (paymentId) => piFetch(`/payments/${paymentId}/cancel`, 'POST');
+  // Quick sanity payload so you can confirm server has the key (but never returns it)
+  return res.status(200).json({
+    ok: true,
+    env,
+    hasKey: !!key,
+  });
+}
