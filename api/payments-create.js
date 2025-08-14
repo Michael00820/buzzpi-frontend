@@ -1,3 +1,12 @@
+const PI_API_KEY =
+  process.env.PI_API_KEY || process.env.NEXT_PUBLIC_PI_API_KEY || '';
+
+const PI_ENV = process.env.PI_ENV || 'sandbox';
+
+if (!PI_API_KEY) {
+  console.error('PI_API_KEY missing in environment!');
+  return res.status(500).json({ ok: false, error: 'Server not configured' });
+}
 // Stub endpoint: logs a payment intent. Replace with real Pi verification later.
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
